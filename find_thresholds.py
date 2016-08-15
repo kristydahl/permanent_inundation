@@ -3,26 +3,32 @@ import csv
 from numpy import genfromtxt
 import collections
 
-def find_threshold(t):
-    gauge_data = genfromtxt('boston_march_2016.csv', dtype=float, skip_header=1, delimiter=',')
-    #print len(gauge_data)
+def find_threshold(t): # add parameter for file with all location data
+
+    gauge_data = genfromtxt('Atlantic City_hourly_data/Atlantic City_hourly_data_2003', dtype=float, skip_header=1, delimiter=',')
+
+    # build in a check of the number of hourly obs in each year.
+
+    # exclude any years with >X% of obs missing
+
+
     print "t is: ", t
-    count = 0
-    for idx,obs in enumerate(gauge_data):
-        obs = gauge_data[idx,1]
-        next_obs = gauge_data[idx+1,1]
+    flood_count = 0
 
+    for idx,row in enumerate(gauge_data):
+        current_observation = gauge_data[idx,1]
 
-        if (obs < t and next_obs > t):
-            #print "Thar she floods!"
-            count = count + 1
-            #print count
-        #print count
+        if idx < (len(gauge_data) - 1):
+            next_observation = gauge_data[(idx+1),1]
 
-        if count > 33:
-            #print 'Adjusting t downward'
-            tnew = t + 0.001
-            find_threshold(tnew)
-            #print "New t is: ", tnew
+            if (current_observation < t and next_observation > t):
+                flood_count = flood_count + 1
 
-        #print 'Count: ', count
+            end_of_file = (idx == len(gauge_data) - 2)
+            if flood_count == 50 and end_of_file:
+                print "DONE! The threshold is " + str(t)
+                return
+
+    find_threshold(t+.001)
+
+#find_threshold(2.87)

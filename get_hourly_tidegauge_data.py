@@ -39,7 +39,7 @@ def get_hourly_data(filename):
             urllib.urlretrieve('http://tidesandcurrents.noaa.gov/api/datagetter?begin_date=%s&end_date=%s&station=%s&product=%s&datum=%s&units=%s&time_zone=%s&format=%s' %(begin_date, end_date, station_number, product, datum, units, time_zone, format), output_filename)
 
 
-            # save csv to directory created above
+# Next will be to iterate over csvs and find threshold w/ 50x/year for each year. Then average and calculate stdev
 
 
 
