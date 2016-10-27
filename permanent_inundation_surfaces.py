@@ -10,9 +10,9 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True
 
 # This requires the near table to be generated before running; should be in projected coordinate system (Tested 10/12/16 and is working)
-def prep_gauge_data_for_interpolation():
+def prep_gauge_data_for_interpolation(region):
 
-    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/east_coast/east_gulf_coast.gdb' # Change for west coast
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region) # Change for west coast
 
     arcpy.env.workspace = gdb
 
@@ -29,7 +29,7 @@ def prep_gauge_data_for_interpolation():
 
 
 # This method has been tested and is working.
-def interpolate_and_create_water_level_surfaces(years, projections):
+def interpolate_and_create_water_level_surfaces(years, projections,region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/permanent_inundation.gdb'
 
@@ -91,9 +91,9 @@ def interpolate_and_create_water_level_surfaces(years, projections):
 
 
 # Tested and working as of 10/12/16!
-def subtract_dems_from_wls(years, projections):
+def subtract_dems_from_wls(years, projections,region):
 
-    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/east_coast/east_gulf_coast.gdb'  # Change for west coast
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)  # Change for west coast
 
     arcpy.env.workspace = gdb
 
@@ -139,9 +139,9 @@ def subtract_dems_from_wls(years, projections):
 
 
 # Tested and working as of 10/13/16
-def combine_chunks (years, projections):
+def combine_chunks (years, projections,region):
 
-    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/east_coast/east_gulf_coast.gdb'  # Change for west coast
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)  # Change for west coast
 
     arcpy.env.workspace = gdb
     #inundated_area_surfaces_raw = subtract_dems_from_wls(years, projections)
@@ -156,8 +156,8 @@ def combine_chunks (years, projections):
 
 
 # Region group/extract, convert to polygon; Tested and working as of 10/13/16
-def region_group_extract(years, projections):
-    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/east_coast/east_gulf_coast.gdb'  # Change for west coast
+def region_group_extract(years, projections,region):
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)  # Change for west coast
 
     arcpy.env.workspace = gdb
 
@@ -223,7 +223,7 @@ def region_group_extract(years, projections):
 #interpolate_and_create_water_level_surfaces(years, projections)
 #subtract_dems_from_wls(years, projections)
 #combine_chunks(years, projections)
-region_group_extract(['MHHW'], ['__ft_N_test'])
+region_group_extract(['MHHW'], ['__ft_N_test'],'east_coast')
 
 
 
