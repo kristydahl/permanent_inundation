@@ -126,12 +126,18 @@ def subtract_dems_from_wls(years, projections,region):
                 # Compare DEM and water level surface. Where WLS >= DEM, set value of 1
 
                 print 'Creating inundated area surface'
-                inundated_area_surface = Con(Raster(water_level_surface)>= Raster(dem), 1) # If we decide to retain depth, see line 218 of slr_surge_analysis and edit here
+                inundated_area_surface = Con(Raster(water_level_surface)>= Raster(dem), 1) # creates flat inundation area raster
+
+                inundated_area_surface_depth = Con(Raster(water_level_surface)>= Raster(dem), Raster(water_level_surface) - Raster(dem)) # creates depth raster
 
                 print 'Created inundated area surface for ' + dem
                 outname_inundated_area_surface = 'inundated_area_surface_%s_%s_' %(year, projection) + dem[:-10]
 
+                outname_inundated_area_surface_depth = 'depth_inundated_area_surface_%s_%s_' %(year, projection) + dem[:-10]
+
                 inundated_area_surface.save(outname_inundated_area_surface)
+
+                inundated_area_surface_depth.save(outname_inundated_area_surface_depth)
 
                 inundated_area_surfaces_raw.append(outname_inundated_area_surface)
 
@@ -152,10 +158,13 @@ def combine_chunks (years, projections,region):
             raw_raster_set = arcpy.ListRasters('inundated_area_surface_{0}_{1}*' .format(year, projection))
             print raw_raster_set
 
+            raw_raster_set_depth = arcpy.ListRasters('depth_inundated_area_surface_{0}_{1}*' .format(year, projection))
+
             arcpy.MosaicToNewRaster_management(raw_raster_set, gdb, 'merged_raw_surface_%s_%s*' %(year, projection),"","32_BIT_FLOAT","","1")
 
+            arcpy.MosaicToNewRaster_management(raw_raster_set_depth, gdb, 'merged_raw_surface_depth_%s_%s*' %(year, projection),"","32_BIT_FLOAT","","1")
 
-# Region group/extract, convert to polygon; Tested and working as of 10/13/16
+# Region group/extract, convert to polygon; Tested and working as of 10/13/16; Would need to add code to convert depth to polygons if/when we want that info.
 def region_group_extract(years, projections,region):
     gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)  # Change for west coast
 

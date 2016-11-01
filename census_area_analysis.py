@@ -91,7 +91,7 @@ def census_area_analysis(years, projections, region):
                             if result == 0:
                                 print 'Table is empty'
                                 writer = csv.writer(csvfile)
-                                writer.writerow([census_tract_state, census_tract_county, census_tract_name, "%.2f" % census_tract_land_area, year, projection, 0, 0])
+                                writer.writerow([census_tract_state, census_tract_county, census_tract_name, "%.2f" % census_tract_land_area, "%.2f" % census_tract_water_area, year, projection, 0, 0])
                                 print 'Wrote to csv'
 
                             else:
@@ -111,7 +111,7 @@ def census_area_analysis(years, projections, region):
                                 writer = csv.writer(csvfile)
 
                                 # NEED TO SUBTRACT WATER AREA FROM SUM_AREA!!
-                                writer.writerow([census_tract_state, census_tract_county, census_tract_name, "%.2f" % census_tract_land_area, year, projection,year, projection, "%.2f" % sum_area, "%.2f" % ((sum_area / census_tract_land_area) * 100)])
+                                writer.writerow([census_tract_state, census_tract_county, census_tract_name, "%.2f" % census_tract_land_area, "%.2f" % census_tract_water_area, year, projection,"%.2f" % sum_area, "%.2f" % ((sum_area / census_tract_land_area) * 100)])
                                 print 'Wrote to csv'
 
                                 row[6] = sum_area/census_tract_land_area * 100
