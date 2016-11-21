@@ -18,7 +18,7 @@ def prep_gauge_data_for_interpolation(region):
 
     # Make layers from empty transect points file and file with gauges and water levels for each year/projection
 
-    gauges_layer = arcpy.MakeFeatureLayer_management("all_east_coast_stations_26x_ncah_proj" .format(region)) # 11/4/16: NEED TO UPDATE FILE NAME AND PATH
+    gauges_layer = arcpy.MakeFeatureLayer_management("all_{0}_stations_26x_ncah_proj" .format(region)) # 11/4/16: NEED TO UPDATE FILE NAME AND PATH
 
     transect_points_layer = arcpy.MakeFeatureLayer_management('{0}_empty_points_proj' .format(region),'transect_points_layer') # CHANGE PATH
 
@@ -44,10 +44,16 @@ def interpolate_and_create_water_level_surfaces(years, projections,region,flood_
 
     fields = arcpy.ListFields(transect_points_layer)
 
+    # Comment out lines 48-50
+    number_of_points = arcpy.GetCount_management('transect_points_layer')
+    count = int(number_of_points.getOutput(0))
+    print(count)
+
     for field in fields:
         print field.name
 
-    mhhw_data = arcpy.ListRasters("all_noaa_mhhw_mosaic")[0]
+    mhhw_data = arcpy.ListRasters("all_noaa_mhhw_west*")[0] # Put in config file for west and east
+
     mhhw_layer = arcpy.MakeRasterLayer_management(mhhw_data,'mhhw_layer')# CHANGED PATH SO READING FROM GDB 11/6/16
 
     # Set interpolation limit as polygon created from coastal counties
@@ -55,45 +61,47 @@ def interpolate_and_create_water_level_surfaces(years, projections,region,flood_
 
     #  Get cell size properties of mhhw_layer to use in interpolation between transect points
 
-    cellsize_properties = ["CELLSIZEX"]
+    #cellsize_property = "CELLSIZEX"
     cellsizes = []
 
-    for cellsize_property in cellsize_properties:
-        size_tmp = arcpy.GetRasterProperties_management(mhhw_layer, cellsize_property)
-        size = size_tmp.getOutput(0)
-        cellsizes.append(size)
-        cellsizes = [float(item) for item in cellsizes]
 
-        cellsize = cellsizes[0]
-        print 'Cell size of mhhw layer is: ' + str(cellsize)
+    #for cellsize_property in cellsize_properties:
+    # these lines should likely be a function
+    size_tmp = arcpy.GetRasterProperties_management(mhhw_layer, "CELLSIZEX")
+    size = size_tmp.getOutput(0)
+    cellsizes.append(size)
+    cellsizes = [float(item) for item in cellsizes]
+
+    cellsize = cellsizes[0]
+    print 'Cell size of mhhw layer is: ' + str(cellsize)
 
         #cellsize = cellsize*4
 
     # For each year/proj horizon (as fields in the joined points file), interpolate empty points file based on field from joined table (gauges water level
-        for projection in projections:
+    for projection in projections:
 
-            for year in years:
+        for year in years:
 
-                print 'Projection is: ' + projection + ' and year is: ' + year
+            print 'Projection is: ' + projection + ' and year is: ' + year
 
-                # interpolate between points
-                interpolated_surface_wrt_mhhw = NaturalNeighbor(transect_points_layer,str('all_{0}_stations_{1}x_' .format(region, flood_frequency) + projection.lower() + '_proj.F' + year + '_' + projection), cellsize)
+            # interpolate between points
+            interpolated_surface_wrt_mhhw = NaturalNeighbor(transect_points_layer,str('all_{0}_stations_{1}x_' .format(region, flood_frequency) + projection.lower() + '_proj.F' + year + '_' + projection), cellsize)
 
-                print 'Created interpolated_surface'
-                arcpy.MakeRasterLayer_management(interpolated_surface_wrt_mhhw, 'interpolated_surface_wrt_mhhw')
+            print 'Created interpolated_surface'
+            arcpy.MakeRasterLayer_management(interpolated_surface_wrt_mhhw, 'interpolated_surface_wrt_mhhw')
 
-                interpolated_surface_wrt_mhhw.save('is_this_interpolated_surface_empty')
-                # add to mhhw surface
-                # There may be issues with coordinate systems/projections. Be aware.
-                print 'Ran Make raster layer'
+            #interpolated_surface_wrt_mhhw.save('is_this_interpolated_surface_empty')
+            # add to mhhw surface
+            # There may be issues with coordinate systems/projections. Be aware.
+            print 'Ran Make raster layer'
 
-                # Careful here!! MHHW Layer has units of meters! This version converts mhhw layer to feet, then adds
-                water_level_surface =  Raster('mhhw_layer')/.3048 + Raster('interpolated_surface_wrt_mhhw')
+            # Careful here!! MHHW Layer has units of meters! This version converts mhhw layer to feet, then adds
+            water_level_surface =  Raster('mhhw_layer')/.3048 + Raster('interpolated_surface_wrt_mhhw')
 
-                # Save WLS with some format that includes year and projection
-                outname = 'water_level_surface_wrt_navd_' + flood_frequency + 'x' + '_' + year + '_' + projection
+            # Save WLS with some format that includes year and projection
+            outname = 'water_level_surface_wrt_navd_' + flood_frequency + 'x' + '_' + year + '_' + projection
 
-                water_level_surface.save(outname)
+            water_level_surface.save(outname)
 
 
 # Tested and working as of 10/12/16!
@@ -114,13 +122,13 @@ def subtract_dems_from_wls(years, projections,region,flood_frequency):
 
             water_level_surface = arcpy.ListRasters('water_level_surface_wrt_navd_*{0}*{1}'.format(year,projection))[0]
             print water_level_surface
-            outname_resampled_water_level_surface = 'water_level_surface_wrt_navd_{0}x_{1}_{2}_resampled'.format(flood_frequency, year, projection)
-            print "Output name is: " + outname_resampled_water_level_surface
+            # outname_resampled_water_level_surface = 'water_level_surface_wrt_navd_{0}x_{1}_{2}_resampled'.format(flood_frequency, year, projection)
+            # print "Output name is: " + outname_resampled_water_level_surface
 
             # get DEMS from gdb
 
-            #dems = arcpy.ListRasters('*final_DEM*')
-            dems = ['NJ_Middle_final_DEM']
+            dems = arcpy.ListRasters('*final_DEM*')
+            #dems = ['VA_Northern_final_DEM']
 
             # Loop through DEMs in a database (get all rasters with final_DEM in name)
 
@@ -173,7 +181,7 @@ def combine_chunks (years, projections,region, flood_frequency):
 
             print 'Outname is: ' + outname
 
-            arcpy.MosaicToNewRaster_management(raw_raster_set, gdb, outname,"","","30","1")
+            arcpy.MosaicToNewRaster_management(raw_raster_set, gdb, outname,"","","10","1")
 
             print 'Created mosaic for ' + year
 
@@ -216,27 +224,59 @@ def region_group_extract(years, projections,region, flood_frequency):
 
                 print("Region grouped " + surface)
 
-                #Extract connected areas
+                # Extract connected areas
 
-                fullname = str(outname_rg)
-                print('File to extract is ' + fullname)
-                filename = os.path.basename(fullname)
-                outname_extract = 'extract_' + filename
+                # fullname = str(outname_rg)
+                # print('File to extract is ' + fullname)
+                # filename = os.path.basename(fullname)
+                # outname_extract = 'extract_' + filename
+                #
+                # print('Extracting ' + filename)
+                # arr = arcpy.da.FeatureClassToNumPyArray(outname_rg, ('Value', 'Count'))
+                # count = arr['Count']
+                # value = arr['Value']
+                # index_to_extract = numpy.argmax(count)
+                # value_to_extract = str(value[index_to_extract])
+                #
+                # inSQLClause = 'Value =' + value_to_extract
+                # print('Extracting ' + value_to_extract + 'from ' + filename)
+                #
+                # attExtract = ExtractByAttributes(fullname, inSQLClause)
+                # attExtract.save(outname_extract)
+                # extracted_files.append(attExtract)
+                # print('Extracted connected areas from' + outname_rg)
 
-                print('Extracting ' + filename)
-                arr = arcpy.da.FeatureClassToNumPyArray(outname_rg, ('Value', 'Count'))
-                count = arr['Count']
-                value = arr['Value']
-                index_to_extract = numpy.argmax(count)
-                value_to_extract = str(value[index_to_extract])
+def extract(years, projections, region, flood_frequency):
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(
+        region)  # Change for west coast
 
-                inSQLClause = 'Value =' + value_to_extract
-                print('Extracting ' + value_to_extract + 'from ' + filename)
+    arcpy.env.workspace = gdb
 
-                attExtract = ExtractByAttributes(fullname, inSQLClause)
-                attExtract.save(outname_extract)
-                extracted_files.append(attExtract)
-                print('Extracted connected areas from' + outname_rg)
+    for projection in projections:
+
+        for year in years:
+
+            rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_{0}x_{1}_{2}' .format(flood_frequency, year, projection))[0]
+            #Extract connected areas
+
+            print('File to extract is ' + rg_surface)
+
+            outname_extract = 'extract_' + rg_surface
+
+            print('Extracting ' + rg_surface)
+            arr = arcpy.da.FeatureClassToNumPyArray(rg_surface, ('Value', 'Count'))
+            count = arr['Count']
+            value = arr['Value']
+            index_to_extract = numpy.argmax(count)
+            value_to_extract = str(value[index_to_extract])
+
+            inSQLClause = 'Value =' + value_to_extract
+            print('Extracting ' + value_to_extract + 'from ' + rg_surface)
+
+            attExtract = ExtractByAttributes(rg_surface, inSQLClause)
+            attExtract.save(outname_extract)
+            #extracted_files.append(attExtract)
+            print('Extracted connected areas from' + rg_surface)
 
             #     # create polygon
             #     fullname = str(outname_extract)
@@ -298,20 +338,47 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 
             to_convert = arcpy.ListRasters('extract_rg_merged*{0}x_{1}_{2}' .format(flood_frequency, year, projection))[0]
 
-            outname_polygon = 'final_polygon_' + str(to_convert)
+            if region == 'east_coast':
 
-            arcpy.RasterToPolygon_conversion(to_convert, outname_polygon, "SIMPLIFY", "VALUE")
+                print 'File to convert is: ' + str(to_convert)
 
-            print 'Converted ' + to_convert + ' to polygon'
+                to_convert_north = arcpy.sa.ExtractByMask(to_convert, 'northern_half')
 
-#interpolate_and_create_water_level_surfaces(['2060','2070','2080','2090','2100'],['NCAH'],'east_coast','26')
+                to_convert_south = arcpy.sa.ExtractByMask(to_convert, 'southern_half')
+
+                outname_polygon = 'final_polygon_' + str(to_convert)
+
+                arcpy.RasterToPolygon_conversion(to_convert_north, str(outname_polygon + '_north'), "SIMPLIFY", "VALUE")
+
+                print 'Converted ' + to_convert_north + ' to polygon'
+
+                arcpy.RasterToPolygon_conversion(to_convert_south, str(outname_polygon + '_south'), "SIMPLIFY", "VALUE")
+
+                print 'Converted ' + to_convert_south + ' to polygon'
+
+                union_north_south = 'final_polygon_' + str(to_convert)
+                arcpy.Union_analysis([str(outname_polygon + '_north'), str(outname_polygon + '_south')], union_north_south)
+
+                print 'United north and south halves'
+
+
+            else:
+
+                print 'File to convert is: ' + str(to_convert)
+                outname_polygon = 'final_polygon_' + str(to_convert)
+
+                arcpy.RasterToPolygon_conversion(to_convert, outname_polygon, "SIMPLIFY", "VALUE")
+
+                print 'Converted ' + to_convert + ' to polygon'
+
+#interpolate_and_create_water_level_surfaces(['2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'west_coast','26')
 #subtract_dems_from_wls(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast','26')
-combine_chunks(['2060'],['NCAH'],'east_coast','26')
-region_group_extract(['2060'],['NCAH'],'east_coast','26')
-#combine_chunks(['2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'east_coast','26')
-#region_group_extract(['2045','2060','2070','2080','2090','2100'], ['NCAH'],'east_coast','26')
-#raster_to_polygon(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast','26')
+#combine_chunks(['2060'],['NCAH'],'east_coast','26')
+#region_group_extract(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'west_coast','26')
+#combine_chunks(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'west_coast','26')
+#extract(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'west_coast','26')
+raster_to_polygon(['2006'],['NCAH'],'west_coast','26')
 
-
+#
 
 
