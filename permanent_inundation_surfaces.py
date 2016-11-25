@@ -9,8 +9,8 @@ arcpy.CheckOutExtension("Spatial")
 
 arcpy.env.overwriteOutput = True
 
-# This requires the near table to be generated before running; should be in projected coordinate system (Tested 10/12/16 and is working)
-def prep_gauge_data_for_interpolation(region):
+# This requires the near table to be generated before running; should be in projected coordinate system
+def prep_gauge_data_for_interpolation(region, projections):
 
     gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)
 
@@ -18,7 +18,7 @@ def prep_gauge_data_for_interpolation(region):
 
     # Make layers from empty transect points file and file with gauges and water levels for each year/projection
 
-    gauges_layer = arcpy.MakeFeatureLayer_management("all_{0}_stations_26x_ncah_proj" .format(region))
+    gauges_layer = arcpy.MakeFeatureLayer_management("all_{0}_stations_26x_{1}_proj" .format(region, projections[0]))
 
     transect_points_layer = arcpy.MakeFeatureLayer_management('{0}_empty_points_proj' .format(region),'transect_points_layer')
 
@@ -36,7 +36,7 @@ def interpolate_and_create_water_level_surfaces(years, projections,region,flood_
 
     arcpy.env.workspace = gdb
 
-    transect_points_layer = prep_gauge_data_for_interpolation(region) # add parameters or not?
+    transect_points_layer = prep_gauge_data_for_interpolation(region, projections) # add parameters or not?
 
 
     fields = arcpy.ListFields(transect_points_layer)
@@ -49,7 +49,7 @@ def interpolate_and_create_water_level_surfaces(years, projections,region,flood_
     for field in fields:
         print field.name
 
-    mhhw_data = arcpy.ListRasters("all_noaa_mhhw_west*")[0] # Put in config file for west and east
+    mhhw_data = arcpy.ListRasters("all_noaa_mhhw*")[0] # Put in config file for west and east
 
     mhhw_layer = arcpy.MakeRasterLayer_management(mhhw_data,'mhhw_layer')
 
@@ -81,7 +81,7 @@ def interpolate_and_create_water_level_surfaces(years, projections,region,flood_
             print 'Projection is: ' + projection + ' and year is: ' + year
 
             # interpolate between points
-            interpolated_surface_wrt_mhhw = NaturalNeighbor(transect_points_layer,str('all_{0}_stations_{1}x_' .format(region, flood_frequency) + projection.lower() + '_proj.F' + year + '_' + projection), cellsize)
+            interpolated_surface_wrt_mhhw = NaturalNeighbor(transect_points_layer,str('all_{0}_stations_{1}x_' .format(region, flood_frequency) + projection + '_proj.F' + year + '_' + projection), cellsize)
 
             print 'Created interpolated_surface'
             arcpy.MakeRasterLayer_management(interpolated_surface_wrt_mhhw, 'interpolated_surface_wrt_mhhw')
@@ -170,7 +170,7 @@ def combine_chunks (years, projections,region, flood_frequency):
 
 # Would need to add code to convert depth to polygons if/when we want that info.
 def region_group_extract(years, projections,region, flood_frequency):
-    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)  # Change for west coast
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)
 
     arcpy.env.workspace = gdb
 
@@ -284,14 +284,12 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 
                 print 'Converted ' + to_convert + ' to polygon'
 
-#interpolate_and_create_water_level_surfaces(['2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'west_coast','26')
-#subtract_dems_from_wls(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast','26')
-#combine_chunks(['2060'],['NCAH'],'east_coast','26')
-#region_group_extract(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'west_coast','26')
-#combine_chunks(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'west_coast','26')
-#extract(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'west_coast','26')
-raster_to_polygon(['2006'],['NCAH'], 'east_coast','26')
+interpolate_and_create_water_level_surfaces(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+subtract_dems_from_wls(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+combine_chunks(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+#region_group_extract(['2035','2060','2080','2100'],['NCAI'],'east_coast','26')
+#extract(['2035','2060','2080','2100'], ['NCAI'],'east_coast','26')
+#raster_to_polygon(['2006','2035','2060','2080','2100'],['NCAIH'], 'east_coast','26')
 
-#
 
 
