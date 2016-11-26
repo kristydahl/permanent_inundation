@@ -63,12 +63,18 @@ def extract(years, projections, region, subregions, flood_frequency):
                 print('Extracting ' + rg_surface)
                 arr = arcpy.da.FeatureClassToNumPyArray(rg_surface, ('Value', 'Count'))
                 count = arr['Count']
+
+                print 'Count is: ' + str(count)
+
                 value = arr['Value']
+
+                print 'Value is: ' + str(value)
+
                 index_to_extract = numpy.argmax(count)
                 value_to_extract = str(value[index_to_extract])
 
                 inSQLClause = 'Value =' + value_to_extract
-                print('Extracting ' + value_to_extract + 'from ' + rg_surface)
+                print('Extracting ' + value_to_extract + ' from ' + rg_surface)
 
                 attExtract = ExtractByAttributes(rg_surface, inSQLClause)
                 attExtract.save(outname_extract)
@@ -80,6 +86,7 @@ def raster_to_polygon(years, projections,region, subregions, flood_frequency):
     gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)
 
     arcpy.env.workspace = gdb
+    arcpy.env.extent = 'all_noaa_mhhw_mosaic_polygon'
 
     for projection in projections:
 
@@ -93,25 +100,14 @@ def raster_to_polygon(years, projections,region, subregions, flood_frequency):
 
                     to_convert = arcpy.ListRasters('extract_rg_merged*{0}x_{1}_{2}_{3}' .format(flood_frequency, year, projection, subregion))[0]
 
+
                     print 'File to convert is: ' + str(to_convert)
 
                     outname_polygon = 'final_polygon_' + str(to_convert)
 
                     arcpy.RasterToPolygon_conversion(to_convert, str(outname_polygon), "SIMPLIFY", "VALUE")
 
-                    print 'Converted' + to_convert + ' to polygon'
-
-                    polygons_of_subregions.append(outname_polygon)
-
-                outname_union = 'final_polygon_{0}x_{1}_{2}_union' .format(flood_frequency, year, projection)
-
-                # print polygons_of_subregions
-                #
-                # arcpy.Union_analysis(polygons_of_subregions, outname_union)
-                #
-                #
-                # print 'United polygon_subregion chunks'
-
+                    print 'Converted ' + to_convert + ' to polygon'
 
             else:
 
@@ -122,10 +118,42 @@ def raster_to_polygon(years, projections,region, subregions, flood_frequency):
 
                 print 'Converted ' + to_convert + ' to polygon'
 
+
+def unite_polygons(years, projections, region, subregions, flood_frequency):
+
+    gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)
+
+    arcpy.env.workspace = gdb
+    #arcpy.env.extent = 'all_noaa_mhhw_mosaic_polygon'
+    for projection in projections:
+
+        for year in years:
+
+            outname_union = 'final_polygon_{0}x_{1}_{2}_union'.format(flood_frequency, year, projection)
+
+            if region == 'east_coast':
+
+                polygons_to_unite = []
+
+                for subregion in subregions:
+
+                    subregion_polygon = arcpy.ListFeatureClasses('final_polygon*{0}x_{1}_{2}_{3}' .format(flood_frequency, year, projection, subregion))[0]
+
+                    polygons_to_unite.append(subregion_polygon)
+
+                arcpy.Union_analysis(polygons_to_unite, outname_union)
+
+                print 'United polygon_subregion chunks'
+
+
+
+
 #interpolate_and_create_water_level_surfaces(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
 #subtract_dems_from_wls(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
 #combine_chunks(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-region_group(['2006','2030','2045','2060','2070','2080','2090'],['NCAH'],'east_coast',['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'],'26')
-extract(['2006','2030','2045','2060','2070','2080','2090'], ['NCAH'], 'east_coast', ['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'], '26')
-raster_to_polygon(['2006','2030','2045','2060','2070','2080','2090'], ['NCAH'], 'east_coast', ['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'], '26')
+region_group(['2035','2060','2080','2100'],['NCAI'],'east_coast',['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'],'26')
+extract(['2035','2060','2080','2100'], ['NCAI'], 'east_coast', ['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'], '26')
+#raster_to_polygon(['2030','2045','2060','2070','2080','2090'], ['NCAH'], 'east_coast', ['me_to_nj','nj_to_nc','nc_to_fl','fl_gulf','gulf_to_tx'], '26')
 #raster_to_polygon(['2006','2035','2060','2080','2100'],['NCAIH'], 'east_coast','26')
+#,'2030','2045','2060','2070','2080','2090'
+#'me_to_nj',
