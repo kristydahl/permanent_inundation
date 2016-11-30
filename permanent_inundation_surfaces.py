@@ -169,7 +169,7 @@ def combine_chunks (years, projections,region, flood_frequency):
 
 
 # Would need to add code to convert depth to polygons if/when we want that info.
-def region_group_extract(years, projections,region, flood_frequency):
+def region_group(years, projections,region, flood_frequency):
     gdb = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb' .format(region)
 
     arcpy.env.workspace = gdb
@@ -284,12 +284,12 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 
                 print 'Converted ' + to_convert + ' to polygon'
 
-interpolate_and_create_water_level_surfaces(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-subtract_dems_from_wls(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-combine_chunks(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-#region_group_extract(['2035','2060','2080','2100'],['NCAI'],'east_coast','26')
-#extract(['2035','2060','2080','2100'], ['NCAI'],'east_coast','26')
-#raster_to_polygon(['2006','2035','2060','2080','2100'],['NCAIH'], 'east_coast','26')
+#interpolate_and_create_water_level_surfaces(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+#subtract_dems_from_wls(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+#combine_chunks(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+region_group(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+extract(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+raster_to_polygon(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
 
 
 
