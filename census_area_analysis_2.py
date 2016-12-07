@@ -28,7 +28,7 @@ def census_area_analysis(years, projections, region, flood_frequency):
 
                 print 'Year is: ' + year + ' and projection is: ' + projection
 
-                municipalities = 'tl_2016_{0}_cousub' .format(state_number) # Import all of these into the appropriate gdb
+                municipalities = 'tl_2016_{0}_cousub' .format(state_number)
 
                 # need to clip municipalities layer to outline of tracts, I think
 
@@ -45,6 +45,8 @@ def census_area_analysis(years, projections, region, flood_frequency):
 
                     inundation_surface = arcpy.ListFeatureClasses('final_polygon*{0}x_{1}_{2}_fl_gulf' .format(flood_frequency, year, projection))[0]
 
+                    mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw_fl_gulf')[0]
+
                     print inundation_surface
 
                     #inundation_surface_layer = arcpy.MakeFeatureLayer_management(inundation_surface, 'Inundation Surface')  # this makes it a layer
@@ -53,11 +55,17 @@ def census_area_analysis(years, projections, region, flood_frequency):
 
                     outname = str(inundation_surface + '_clip_to_{0}' .format(state_number))
 
+                    outname_mhhw = str(mhhw_inundation_surface + '_clip_to_{0}' .format(state_number))
+
                     state_inundation_surface = arcpy.Clip_analysis(inundation_surface, 'clipped municipalities', outname)
 
-                    print 'Clipped inundation surface to state'
+                    state_mhhw_inundation_surface = arcpy.Clip_analysis(mhhw_inundation_surface, 'clipped_municipalities', outname_mhhw)
+
+                    print 'Clipped inundation and mhhw surfaces to state'
 
                     arcpy.AddField_management(municipalities_layer,"Pct_inun_{0}_{1}" .format(year, projection),"FLOAT")
+
+                    arcpy.AddField_management(municipalities_layer, "Pct_inun_MHHW","FLOAT")
 
                     print 'Added Percent inundation field'
 
@@ -73,9 +81,9 @@ def census_area_analysis(years, projections, region, flood_frequency):
                     arcpy.SelectLayerByLocation_management('clipped municipalities', "INTERSECT", state_inundation_surface, "","NEW_SELECTION")
 
 
-                    fields = ["SHAPE@","ALAND","STATEFP","COUNTYFP","NAME","AWATER","Tot_area","Pct_inun_{0}_{1}" .format(year, projection)]
+                    #fields = ["SHAPE@","ALAND","STATEFP","COUNTYFP","NAME","AWATER","Tot_area","Pct_inun_{0}_{1}" .format(year, projection)]
 
-
+                    fields = ["SHAPE@", "ALAND", "STATEFP", "COUNTYFP", "NAME", "AWATER", "Tot_area", "Pct_inun_MHHW", "Pct_inun_{0}_{1}"]
                     with arcpy.da.UpdateCursor(municipalities_layer,fields) as cursor:
                         for row in cursor:
                             muni = row[0]
@@ -146,7 +154,7 @@ def census_area_analysis(years, projections, region, flood_frequency):
                                 print 'Land area is 0.'
 
 #census_area_analysis(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'east_coast','26')
-census_area_analysis(['2100'], ['NCAH'], 'east_coast', '26')
+census_area_analysis(['2006'], ['NCAH'], 'east_coast', '26')
 
 # Changes to be made
 # Will need to run just for MHHW and make that a field
