@@ -22,7 +22,7 @@ def clip_to_tracts_then_mhhw_polygon(region):
 
     print SR
 
-    state_numbers = ['51']
+    state_numbers = ['01','09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45']
 
     for state_number in state_numbers:
         municipalities = 'tl_2016_{0}_cousub'.format(state_number)
@@ -41,7 +41,8 @@ def clip_mhhw_layer_to_states(region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['51']
+    state_numbers = ['22']
+    #'13', '22', '23', '24', '25', '28', '33', '34', '36', '37', '42', '44', '45'
 
     for state_number in state_numbers:
 
@@ -51,7 +52,9 @@ def clip_mhhw_layer_to_states(region):
 
         arcpy.MakeFeatureLayer_management(municipalities_outline, 'municipalities_outline')
 
-        mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon_mhhw_merged')[0]
+        #mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon_mhhw_merged')[0]
+
+        mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw*gulf_to_tx')[0] #use this for FL and gulf_to_tx for LA
 
         outname_mhhw = str(mhhw_inundation_surface + '_clip_to_{0}' .format(state_number))
 
@@ -71,17 +74,18 @@ def municipality_analysis_mhhw(region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['51']
+    state_numbers = ['23', '24', '25', '28', '33', '34', '36', '37', '42', '44', '45']
 
     for state_number in state_numbers:
 
+        print 'State number is: ' + state_number
         arcpy.env.extent = 'tl_2016_{0}_cousub_clip_diss' .format(state_number)
 
         municipalities = 'tl_2016_{0}_cousub_clip' .format(state_number)
 
         arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities')
 
-        state_mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw_clip_to_{0}' .format(state_number))[0]
+        state_mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw_merged_clip_to_{0}' .format(state_number))[0]
 
         arcpy.SelectLayerByLocation_management('clipped_municipalities', "INTERSECT", state_mhhw_inundation_surface, "","NEW_SELECTION")
 
@@ -151,12 +155,14 @@ def municipality_analysis_mhhw(region):
                 else:
                     print 'Land area is 0.'
 
+        print 'Finished municipality analysis for state number ' + state_number
+
 
 def clip_inundation_layers_to_states(years, projections, region, flood_frequency):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['51']
+    state_numbers = ['01','09','10','11','12','13', '23', '24', '25', '28', '33', '34', '36', '37', '42', '44', '45']
 
     for projection in projections:
 
@@ -170,7 +176,7 @@ def clip_inundation_layers_to_states(years, projections, region, flood_frequency
 
                 arcpy.MakeFeatureLayer_management(municipalities_outline, 'municipalities_outline')
 
-                inundation_surface = arcpy.ListFeatureClasses('final_polygon*{0}_{1}_{2}_clip_to_{0}' .format(flood_frequency, year, projection, state_number))[0]
+                inundation_surface = 'final_polygon_{0}x_{1}_{2}_merged' .format(flood_frequency, year, projection)
 
                 outname_inundation_surface = str(inundation_surface + '_clip_to_{0}'.format(state_number))
 
@@ -181,10 +187,9 @@ def clip_inundation_layers_to_states(years, projections, region, flood_frequency
 
 def municipality_analysis_year(years, projections, region, flood_frequency):
 
-    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(
-        region)
+    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['48']
+    state_numbers = ['51']
 
     for projection in projections:
 
@@ -192,27 +197,20 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
 
             for state_number in state_numbers:
 
+                arcpy.env.extent = 'tl_2016_{0}_cousub_clip_diss' .format(state_number)
+
                 print 'Year is: ' + year + ' and projection is: ' + projection
 
-                municipalities = 'tl_2016_{0}_cousub3_clip_proj'.format(state_number)
+                municipalities = 'tl_2016_{0}_cousub_clip'.format(state_number)
 
-                municipalities_layer = arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities')
+                arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities')
 
                 csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_area_'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
 
                 with open(csv_filename, 'wb') as csvfile:
 
-                    #inundation_surface = arcpy.ListFeatureClasses('final_polygon_{0}x_{1}_{2}_merged'.format(flood_frequency, year, projection))[0] # need to get this into parameters
-
                     state_inundation_surface = arcpy.ListFeatureClasses(
-                        'final_polygon*{0}x_{1}_{2}_gulf_to_tx_clip_to_48'.format(flood_frequency, year, projection))[0]  # need to get this into parameters
-                    #inundation_surface = 'final_polygon_extract_rg_merged_raw_raster_surface_26x_2045_NCAH_me_to_nj_clip_to_36'  # need to get this into parameters
-
-                    #outname = str(inundation_surface + '_clip_to_{0}'.format(state_number))
-
-                    #state_inundation_surface = arcpy.Clip_analysis(inundation_surface,'clipped_municipalities', outname)
-
-                    #print 'Clipped inundation surface to state'
+                        'final_polygon*{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]  # need to get this into parameters
 
                     arcpy.AddField_management('clipped_municipalities', "Area_inun_{0}_{1}".format(year, projection), "FLOAT")
 
@@ -226,7 +224,7 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
 
                     fields = ["SHAPE@", "ALAND", "STATEFP", "COUNTYFP", "NAME", "AWATER", "Shape_Area", "Area_MHHW", "Area_inun_{0}_{1}" .format(year, projection), "Pct_inun_{0}_{1}".format(year, projection)]
 
-                    with arcpy.da.UpdateCursor(municipalities_layer, fields) as cursor:
+                    with arcpy.da.UpdateCursor('clipped_municipalities', fields) as cursor:
                         for row in cursor:
 
                             muni = row[0]
@@ -238,7 +236,7 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
                             total_muni_area = row[6]
                             mhhw_area = row[7]
 
-                            outname_2 = 'clip_inundation_surface_' + year + '_' + projection + '_to_muni'
+                            outname = 'clip_inundation_surface_' + year + '_' + projection + '_to_muni'
 
                             print 'Municipality is: ' + muni_name
 
@@ -253,11 +251,11 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
 
                             elif total_muni_area > 0:
 
-                                arcpy.Clip_analysis(str(state_inundation_surface), muni, outname_2)
+                                arcpy.Clip_analysis(str(state_inundation_surface), muni, outname)
 
                                 print 'Clipped inundation surface layer to tract'
 
-                                fc = arcpy.MakeFeatureLayer_management(outname_2, 'clipped_inundation_surface_layer')
+                                fc = arcpy.MakeFeatureLayer_management(outname, 'clipped_inundation_surface_layer')
 
                                 print 'Created clipped_inundation_surface_layer to municipality'
 
@@ -277,19 +275,16 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
                                     # get sum of all rows in Area_acres
                                     output_table_name = 'output_sum_area'
 
-                                    arcpy.Statistics_analysis(fc, output_table_name,
-                                                              [["Shape_Area", "SUM"]])
+                                    arcpy.Statistics_analysis(fc, output_table_name, [["Shape_Area", "SUM"]])
 
                                     print 'Calculated stats'
 
                                     sum_area = arcpy.da.TableToNumPyArray(output_table_name, 'SUM_Shape_Area')[0]
 
-                                    print 'Inundated area is: ' + str(sum_area[0]) + ', and mhhw_area is: ' + str(mhhw_area) + ', and municipality area is: ' + str(total_muni_area)
+                                    print 'Inundated area is: ' + str(sum_area[0]) + ', mhhw_area is: ' + str(mhhw_area) + ', and municipality area is: ' + str(total_muni_area)
 
 
                                     if mhhw_area is None:
-
-                                        #percent_inundated_area_minus_mhhw = (sum_area[0]/total_muni_area)*100
 
                                         current_dry_area = total_muni_area
 
@@ -313,7 +308,6 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
                                         cursor.updateRow(row)
 
                                     else:
-                                        #percent_inundated_area_minus_mhhw = (sum_area[0]/total_muni_area)*100 - mhhw_percent_area
 
                                         current_dry_area = total_muni_area - mhhw_area
 
@@ -462,13 +456,15 @@ def zip(years, projections, region, state_numbers):
 
 
 
-
+# run in this order:
 
 #clip_to_tracts_then_mhhw_polygon('east_coast')
-clip_mhhw_layer_to_states('east_coast')
+#clip_mhhw_layer_to_states('east_coast')
 
 #municipality_analysis_mhhw('east_coast')
-#municipality_analysis_year(['2060','2070','2080','2090'], ['NCAH'], 'east_coast', '26')
+clip_inundation_layers_to_states(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast','26')
+#municipality_analysis_year(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast', '26')
+
 
 #cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['36'], 20)
 #zip(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'east_coast',['48'])
