@@ -15,10 +15,10 @@ def subtract_dems_from_wls(region):
 
     arcpy.env.workspace = gdb
 
-    water_level_surface = arcpy.ListRasters('all_noaa_mhhw_west')[0]
+    water_level_surface = arcpy.ListRasters('all_noaa_mhhw_mosaic')[0]
     print water_level_surface
 
-    dems = arcpy.ListRasters('*final_DEM*')
+    dems = arcpy.ListRasters('FL_JAX*final_DEM*') # change back to just *final_DEM for full analysis
 
     for dem in dems:
 
@@ -50,7 +50,7 @@ def combine_chunks (region):
 
     #raw_raster_set_depth = arcpy.ListRasters('depth_inundated_area_surface*{0}_{1}*' .format(year, projection))
 
-    outname = 'merged_raw_raster_surface_mhhw'
+    outname = 'merged_raw_raster_surface_mhhw_122216' #change back to not having date stamp for general analysis
 
     print 'Outname is: ' + outname
 
@@ -67,7 +67,7 @@ def region_group(region, subregions):
     arcpy.env.workspace = gdb
 
 
-    merged_raw_surface = arcpy.ListRasters('merged_raw_raster_surface_mhhw')[0]
+    merged_raw_surface = arcpy.ListRasters('merged_raw_raster_surface_mhhw_122216')[0] # change back to not having date stamp for general analysis
 
     fullname = str(merged_raw_surface)
     print('Raw surface name is ' + fullname)
@@ -103,7 +103,7 @@ def extract(region, subregions):
 
         for subregion in subregions:
 
-            rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_mhhw_{0}' .format(subregion))[0]
+            rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_mhhw_122216_{0}' .format(subregion))[0] # change back to not having date stamp for general analysis
 
             print('File to extract is ' + rg_surface)
 
@@ -174,7 +174,7 @@ def raster_to_polygon(region, subregions):
 
         for subregion in subregions:
 
-            to_convert = arcpy.ListRasters('extract_rg_merged*mhhw_{0}' .format(subregion))[0]
+            to_convert = arcpy.ListRasters('extract_rg_merged*mhhw_122216_{0}' .format(subregion))[0] # change back to not having date stamp for general analysis
 
             print 'File to convert is: ' + str(to_convert)
 
@@ -195,14 +195,14 @@ def raster_to_polygon(region, subregions):
         print 'Converted ' + to_convert + ' to polygon'
 
 
-#subtract_dems_from_wls('west_coast')
-#combine_chunks('west_coast')
-#region_group('west_coast',[])
-#extract('west_coast',[])
+#subtract_dems_from_wls('east_coast')
+#combine_chunks('east_coast')
+#region_group('east_coast',['fl_gulf'])
+#extract('east_coast',['fl_gulf'])
 #extract(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
 #raster_to_polygon(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
 
-raster_to_polygon('west_coast',[])
+raster_to_polygon('east_coast',['fl_gulf'])
 
 
 
