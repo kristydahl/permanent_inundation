@@ -8,7 +8,7 @@ from numpy import genfromtxt
 import csv
 arcpy.CheckOutExtension("Spatial")
 import zipfile
-
+import pandas
 arcpy.env.overwriteOutput = True
 
 def clip_to_tracts_then_mhhw_polygon(region):
@@ -22,7 +22,7 @@ def clip_to_tracts_then_mhhw_polygon(region):
 
     print SR
 
-    state_numbers = ['48']
+    state_numbers = ['06','41','53']
 
     for state_number in state_numbers:
         municipalities = 'tl_2016_{0}_cousub'.format(state_number)
@@ -41,7 +41,7 @@ def clip_mhhw_layer_to_states(region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['12']
+    state_numbers = []
     #'13', '22', '23', '24', '25', '28', '33', '34', '36', '37', '42', '44', '45'
 
     for state_number in state_numbers:
@@ -78,9 +78,11 @@ def municipality_analysis_mhhw(region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['22']
+    state_numbers = ['53']
 
     for state_number in state_numbers:
+
+        arcpy.AddField_management('clipped_municipalities', "Area_MHHW", "FLOAT")
 
         print 'State number is: ' + state_number
         arcpy.env.extent = 'tl_2016_{0}_cousub_clip_diss' .format(state_number)
@@ -167,7 +169,7 @@ def clip_extract_and_convert_to_polygon(years, projections, region, subregion, f
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['22']
+    state_numbers = ['06','41','53']
 
     for projection in projections:
 
@@ -176,12 +178,13 @@ def clip_extract_and_convert_to_polygon(years, projections, region, subregion, f
             for state_number in state_numbers:
 
                 print 'Year is ' + year+ ', state number is ' + state_number
-                extract = arcpy.ListRasters('extract*{0}x_{1}_{2}_{3}' .format(flood_frequency, year, projection, subregion))[0] #UNCOMMENT FOR YEARS
+                #extract = arcpy.ListRasters('extract*{0}x_{1}_{2}_{3}' .format(flood_frequency, year, projection, subregion))[0] #UNCOMMENT FOR YEARS
+                extract = arcpy.ListRasters('extract*{0}x_{1}_{2}'.format(flood_frequency, year, projection))[0]  # UNCOMMENT FOR YEARS
                 #extract = 'extract_{0}_{1}_{2}_{3}_mosaic' .format(flood_frequency, year, projection, subregion)
 
-                #extract = arcpy.ListRasters('extract*mhhw_{0}_mosaic' .format(subregion))[0] # COMMENT FOR YEARS
+                #extract = arcpy.ListRasters('extract*mhhw' .format(subregion))[0] # COMMENT FOR YEARS
+                #extract = arcpy.ListRasters('extract*mhhw')[0]  # COMMENT FOR YEARS
 
-                extract = 'extract_mhhw_clip_to_22'
 
                 print 'File to clip is: ' + extract
 
@@ -204,8 +207,7 @@ def clip_extract_and_convert_to_polygon(years, projections, region, subregion, f
 
                 print 'Clipped extract to state number ' + state_number
 
-                #extract_to_convert = Con(Raster(extract)>0, 1) # COMMENT OUT!!!
-                extract_to_convert = Con(Raster(outname)>0, 1) # UNCOMMENT
+                extract_to_convert = Con(Raster(outname)>0, 1)
 
                 arcpy.RasterToPolygon_conversion(extract_to_convert, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}' .format(flood_frequency, year, projection, state_number)) #UNCOMMENT FOR YEARS
 
@@ -247,7 +249,7 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = ['22']
+    state_numbers = ['23']
     for projection in projections:
 
         for year in years:
@@ -267,7 +269,7 @@ def municipality_analysis_year(years, projections, region, flood_frequency):
                 with open(csv_filename, 'wb') as csvfile:
 
                     state_inundation_surface = arcpy.ListFeatureClasses(
-                        'final_polygon*{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]
+                        'final_polygon*{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] # Add _2 for LA!
 
                     arcpy.RepairGeometry_management(state_inundation_surface)
 
@@ -404,25 +406,25 @@ def cohort_id_csv(years, projections, region, state_numbers, area_threshold):
 
     path = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/'.format(region)
 
-    for projection in projections:
+    for state_number in state_numbers:
 
-        for year in years:
+        for projection in projections:
 
-            for state_number in state_numbers:
+            for year in years:
 
-                file_to_analyze = glob.glob1(path,'inundated_muni_area*{0}_{1}_{2}*' .format(year, projection, state_number))[0]
+                file_to_analyze = glob.glob1(path, 'inundated_muni_area*{0}_{1}_{2}*'.format(year, projection, state_number))[0]
 
                 file_with_path = str(path + file_to_analyze)
 
                 print file_to_analyze
 
-                inundated_area_data = numpy.genfromtxt(file_with_path, dtype=None, delimiter=',', skip_header=0)
-
-                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_municipalities_by_year_{0}_{1}_state{2}' .format(region, projection, state_number) + '.csv'
+                inundated_area_data = pandas.read_csv(file_with_path)
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_municipalities_by_year_{0}_{1}_{2}_state{3}'.format(
+                    region, area_threshold, projection, state_number) + '.csv'
 
                 with open(csv_filename, 'ab') as csvfile:
 
-                    for row in inundated_area_data:
+                    for index, row in inundated_area_data.iterrows():
 
                         muni_name = row[2]
 
@@ -430,7 +432,7 @@ def cohort_id_csv(years, projections, region, state_numbers, area_threshold):
 
                         if inundated_area >= area_threshold:
 
-                            print muni_name + ' is in cohort'
+                            print str(muni_name) + ' is in cohort'
 
                             writer = csv.writer(csvfile)
 
@@ -445,9 +447,11 @@ def cohort_id_shp(years, projections, region, state_numbers, area_threshold):
 
     for state_number in state_numbers:
 
-        municipalities = 'tl_2016_{0}_cousub2_clip' .format(state_number)
+        municipalities = 'tl_2016_{0}_cousub_clip' .format(state_number)
 
         municipalities_layer = arcpy.MakeFeatureLayer_management(municipalities, 'municipalities')
+
+        print state_number
 
         for projection in projections:
 
@@ -466,9 +470,26 @@ def cohort_id_shp(years, projections, region, state_numbers, area_threshold):
 
                 arcpy.CopyFeatures_management(cohort_munis, outname)
 
-                #output_folder = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_shapefiles' .format(region)
+def merge_cohorts(years, projections, region, area_threshold):
 
-                #arcpy.FeatureClassToShapefile_conversion(outname, output_folder)
+    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(
+        region)
+
+    for projection in projections:
+
+        for year in years:
+
+            all_state_cohorts_per_year = arcpy.ListFeatureClasses('cohort_municipalities*{0}_{1}_{2}percent*' .format(year, projection, area_threshold))
+
+            print all_state_cohorts_per_year
+
+            outname = '{0}_{1}percent_cohort_{2}_{3}' .format(region, area_threshold, year, projection)
+
+            arcpy.Merge_management(all_state_cohorts_per_year, outname)
+
+            print 'Merged state cohorts for {0} {1}' .format(year, projection)
+
+
 
 def export_to_shapefile(years, projections, region, state_numbers):
 
@@ -485,6 +506,29 @@ def export_to_shapefile(years, projections, region, state_numbers):
         for item in to_export:
 
             arcpy.FeatureClassToShapefile_conversion(item, output_folder)
+
+def export_cohort_to_shapefile(years, projections, region, area_threshold):
+    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(
+        region)
+
+    output_folder = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_shapefiles'.format(region)
+
+    for projection in projections:
+
+        for year in years:
+
+            #to_export = arcpy.ListFeatureClasses('{0}_{1}percent_cohort_{2}_{3}_state48' .format(region, area_threshold, year, projection))
+            to_export = arcpy.ListFeatureClasses(
+                'cohort_municipalities_{0}_{1}_{2}percent_state51'.format(year, projection, area_threshold))
+
+
+            print to_export
+
+            for item in to_export:
+
+                arcpy.FeatureClassToShapefile_conversion(item, output_folder)
+
+                print 'Exported {0} {1} to shapefile' .format(year, projection)
 
 def zip(years, projections, region, state_numbers):
 
@@ -647,24 +691,257 @@ def municipality_analysis_mhhw_la(region):
                     print 'Land area is 0.'
 
         print 'Finished municipality analysis for state number ' + state_number
+
+def municipality_analysis_year_la(years, projections, region, flood_frequency):
+
+        arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
+
+        state_numbers = ['22']
+
+        for projection in projections:
+
+            for year in years:
+
+                for state_number in state_numbers:
+
+                    print 'Year is: ' + year + ' and projection is: ' + projection
+                    arcpy.env.extent = 'tl_2016_{0}_cousub_clip_diss'.format(state_number)
+
+                    municipalities = 'tl_2016_{0}_cousub_clip'.format(state_number)
+
+                    arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities')
+
+                    state_inundation_surface = arcpy.ListRasters('extract_{0}x_{1}_{2}_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]
+
+                    polygon_layer = arcpy.ListFeatureClasses('final_polygon_{0}x_{1}_{2}*clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]
+
+                    arcpy.AddField_management('clipped_municipalities', "Area_inun_{0}_{1}".format(year, projection),
+                                              "FLOAT")
+
+                    arcpy.AddField_management('clipped_municipalities', "Pct_inun_{0}_{1}".format(year, projection),
+                                              "FLOAT")
+
+                    print 'Added Area and Percent inundation fields'
+
+
+                    arcpy.SelectLayerByLocation_management('clipped_municipalities', "INTERSECT", polygon_layer, "",
+                                                           "NEW_SELECTION")
+
+                    Xmin = str(arcpy.GetRasterProperties_management(state_inundation_surface, "LEFT").getOutput(0))
+
+                    Ymin = str(arcpy.GetRasterProperties_management(state_inundation_surface, "BOTTOM").getOutput(0))
+
+                    Xmax = str(arcpy.GetRasterProperties_management(state_inundation_surface, "RIGHT").getOutput(0))
+
+                    Ymax = str(arcpy.GetRasterProperties_management(state_inundation_surface, "TOP").getOutput(0))
+
+                    extents = '{0} {1} {2} {3}'.format(Xmin, Ymin, Xmax, Ymax)
+
+                    print extents
+
+                    csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_area_'.format(
+                        region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
+
+                    with open(csv_filename, 'wb') as csvfile:
+                        fields = ["SHAPE@", "ALAND", "STATEFP", "COUNTYFP", "NAME", "AWATER", "Shape_Area", "Area_MHHW",
+                                  "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection)]
+
+                        count = 0
+                        with arcpy.da.UpdateCursor('clipped_municipalities', fields) as cursor:
+                            for row in cursor:
+
+                                count = count + 1
+
+                                print 'Count is: ' + str(count)
+                                muni = row[0]
+                                muni_land_area = row[1]
+                                muni_state = row[2]
+                                muni_county = row[3]
+                                muni_name = row[4]
+                                muni_water_area = row[5]
+                                total_muni_area = row[6]
+                                mhhw_area = row[7]
+
+                                outname = 'clip_raster_inundation_surface_' + year + '_' + projection + '_to_muni_' + str(count)
+
+                                print 'Year is: ' + year + ' and state number is ' + state_number
+
+                                print 'Municipality is: ' + muni_name
+
+                                if total_muni_area is None:
+
+                                    print 'Municipality area is None'
+
+                                elif total_muni_area > 0:
+
+                                    arcpy.Clip_management(state_inundation_surface, "{0}".format(extents), outname,
+                                                          muni, "#", "ClippingGeometry", "#")
+
+                                    print 'Clipped inundation surface layer to tract'
+
+                                    extract_to_convert = Con(Raster(outname) > 0, 1)
+
+                                    arcpy.RasterToPolygon_conversion(extract_to_convert, 'clipped_inundation_surface_layer')
+
+                                    fc = arcpy.MakeFeatureLayer_management('clipped_inundation_surface_layer', 'clipped_inundation_surface_layer')
+
+                                    print 'Created clipped_inundation_surface_layer to municipality'
+
+                                    result = int(arcpy.GetCount_management(fc).getOutput(0))
+
+                                    if result == 0:
+                                        print 'Table is empty'
+                                        writer = csv.writer(csvfile)
+
+                                        writer.writerow([muni_state, muni_county, muni_name, "%.2f" % total_muni_area,
+                                                         "%.2f" % muni_water_area, year, projection, 0])
+                                        print 'Wrote to csv'
+
+                                    else:
+
+                                        output_table_name = 'output_sum_area_{0}'.format(str(count))
+
+                                        arcpy.Statistics_analysis(fc, output_table_name, [["Shape_Area", "SUM"]])
+
+                                        print 'Calculated stats'
+
+                                        sum_area = arcpy.da.TableToNumPyArray(output_table_name, 'SUM_Shape_Area')[0]
+
+                                        print 'Inundated area is: ' + str(sum_area[0]) + ', mhhw_area is: ' + str(
+                                            mhhw_area) + ', and municipality area is: ' + str(total_muni_area)
+
+                                        if mhhw_area is None:
+
+                                            current_dry_area = total_muni_area
+
+                                            newly_inundated_area = sum_area[0]
+
+                                            percent_inundated_area_minus_mhhw = (newly_inundated_area / current_dry_area) * 100
+
+                                            writer = csv.writer(csvfile)
+
+                                            writer.writerow(
+                                                [muni_state, muni_county, muni_name, "%.2f" % total_muni_area, year,
+                                                 projection, "%.2f" % sum_area[0],
+                                                 "%.2f" % percent_inundated_area_minus_mhhw])
+
+                                            print 'Wrote to csv'
+
+                                            row[8] = newly_inundated_area
+                                            row[9] = percent_inundated_area_minus_mhhw
+
+                                            # Update the census tracts layer with the % inundation for that tract for the year-projection field
+                                            cursor.updateRow(row)
+
+                                        else:
+
+                                            current_dry_area = total_muni_area - mhhw_area
+
+                                            total_inundated_area = sum_area[0]
+                                            newly_inundated_area = sum_area[0] - mhhw_area
+
+                                            percent_inundated_area_minus_mhhw = (newly_inundated_area / current_dry_area) * 100
+
+                                            writer = csv.writer(csvfile)
+
+                                            writer.writerow(
+                                                [muni_state, muni_county, muni_name, "%.2f" % total_muni_area, year,
+                                                 projection, "%.2f" % sum_area[0],
+                                                 "%.2f" % percent_inundated_area_minus_mhhw])
+                                            print 'Wrote to csv'
+
+                                            row[8] = total_inundated_area
+                                            row[9] = percent_inundated_area_minus_mhhw
+
+                                            # Update the census tracts layer with the % inundation for that tract for the year-projection field
+                                            cursor.updateRow(row)
+
+                                    del fc
+
+                                else:
+                                    print 'Land area is 0.'
+
+                    print 'Finished municipality analysis for state number ' + state_number + ' for {0} {1}'.format(year, projection)
+
+
+
+def write_csv_from_shp(years, projections, region):
+    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
+
+    state_numbers = ['28']
+
+    for projection in projections:
+
+        for year in years:
+
+            for state_number in state_numbers:
+
+                municipalities = 'tl_2016_{0}_cousub_clip'.format(state_number)
+
+                print 'Year is: ' + year + ' and projection is: ' + projection
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_area_'.format(
+                    region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
+
+                with open(csv_filename, 'wb') as csvfile:
+                    fields = ["SHAPE@", "ALAND", "STATEFP", "COUNTYFP", "NAME", "AWATER", "Shape_Area", "Area_MHHW",
+                              "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection)]
+
+
+                    with arcpy.da.UpdateCursor(municipalities, fields) as cursor:
+                        for row in cursor:
+
+                            muni = row[0]
+                            muni_land_area = row[1]
+                            muni_state = row[2]
+                            muni_county = row[3]
+                            muni_name = row[4]
+                            muni_water_area = row[5]
+                            total_muni_area = row[6]
+                            mhhw_area = row[7]
+                            total_inundated_area = row[8]
+                            percent_inundated = row[9]
+
+                            writer = csv.writer(csvfile)
+
+                            if total_inundated_area is None:
+                                print 'Inundated area is None'
+
+                            else:
+                                writer.writerow([muni_state, muni_county, muni_name, "%.2f" % total_muni_area, year,projection, "%.2f" % total_inundated_area,
+                                     "%.2f" % percent_inundated])
+                                print 'Wrote to csv'
+
+#write_csv_from_shp(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast')
 #mosaic_extracts(['2006'], ['NCAH'], 'east_coast','26','nc')
 
 
 # run in this order:
 
-#clip_to_tracts_then_mhhw_polygon('east_coast')
+#clip_to_tracts_then_mhhw_polygon('west_coast')
 #clip_mhhw_layer_to_states('east_coast')
 
-#municipality_analysis_mhhw_la('east_coast')
+#municipality_analysis_mhhw('west_coast')
 #clip_inundation_layers_to_states(['2100'],['NCAI'],'east_coast','26')
 
-#clip_extract_and_convert_to_polygon(['2006'], ['NCAH'], 'east_coast', 'fl_gulf', '26')
+#clip_extract_and_convert_to_polygon(['2035','2060','2080','2100'], ['NCAI'], 'west_coast', 'none', '26')
 
-municipality_analysis_year(['2006','2030'], ['NCAH'], 'east_coast', '26')
+#municipality_analysis_year(['2100'], ['NCAI'], 'east_coast', '26')
 #municipality_analysis_year(['2035'], ['NCAI'], 'east_coast', '26')
 #municipality_analysis_year(['2035','2060','2080','2100'], ['NCAI'], 'east_coast', '26')
 #municipality_analysis_year(['2035','2060','2080','2100'], ['NCAI'], 'east_coast', '26')
-#cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['36'], 20)
+
 #zip(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'],'east_coast',['48'])
 
 #,'09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45','48','51'
+
+#merge_cohorts(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '20')
+#merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'east_coast', '20')
+
+
+#cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
+#cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
+#merge_cohorts(['2035','2060','2080','2100'], ['NCAI'],'east_coast', '20')
+#merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'west_coast', '20')
+
+
+export_cohort_to_shapefile(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '10')
