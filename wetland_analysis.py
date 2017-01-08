@@ -58,7 +58,7 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
             #municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands'.format(state_number)
 
-            municipalities = 'tl_2016_{0}_clip_no_wetlands_or_mhhw_testing2' .format(state_number)
+            municipalities = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number)
 
             wetlands = 'wetlands_{0}_clip_proj'.format(state_number)
 
@@ -274,6 +274,6 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
 #prep_wetlands_data('east_coast',['48'])
 
-municipality_wetlands_analysis(['2006','2080','2090','2100'], ['NCAH'], 'east_coast','26',['48'])
+municipality_wetlands_analysis(['2006','2030','2045','2060','2070','2080','2090'], ['NCAH'], 'east_coast','26',['51'])
 
 #,'2030','2045','2060','2070','2080','2090','2100'

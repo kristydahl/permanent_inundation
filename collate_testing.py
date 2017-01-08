@@ -19,11 +19,13 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
         for year in years:
 
+            print 'Year is: ' + year
+
             for state_number in state_numbers:
 
                 municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands' .format(state_number)
 
-                file_with_results = 'tl_2016_{0}_clip_no_wetlands_or_mhhw_testing2' .format(state_number)
+                file_with_results = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number)
 
                 arcpy.MakeFeatureLayer_management(municipalities, 'municipalities')
 
@@ -37,58 +39,68 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
                 print 'Added Area and Percent inundation fields to municipalities file'
 
+                arcpy.SelectLayerByLocation_management('municipalities',"INTERSECT", 'to_read', "", "NEW_SELECTION")
 
-                #csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_summary'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
 
-                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/test_collate.csv' .format(region)
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_summary'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
+
+                #csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/test_collate.csv' .format(region)
 
                 with open(csv_filename, 'wb') as csvfile:
-                    fields = ['GEOID', "STATEFP", "COUNTYFP", "NAME", "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection)]
+                    fields = ['GEOID', "STATEFP", "COUNTYFP", "NAME", "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection), "Shape_Area"]
 
+                    count = 0
                     with arcpy.da.UpdateCursor('municipalities', fields) as cursor:
                         for row in cursor:
+
+                            count = count + 1
 
                             geoid = row[0]
                             muni_state = row[1]
                             muni_county = row[2]
                             muni_name = row[3]
+                            muni_area = row[6]
 
-                            #print geoid
-
-                            #expression = "[GEOID]  = {0} "  .format(geoid)
-
-                            #print expression
                             fc = arcpy.SelectLayerByAttribute_management('to_read',"NEW_SELECTION", " GEOID = '{0}' " .format(geoid))
 
-                            output_table_name_total = 'output_total_area'
+                            output_table_name_total = 'output_total_area_collate_' + str(count)
 
-                            output_table_name_inundated = 'output_inundated_area'
+                            output_table_name_inundated = 'output_inundated_area_collate_'+ str(count)
 
                             arcpy.Statistics_analysis(fc, output_table_name_total, [["Shape_Area", "SUM"]])
 
                             arcpy.Statistics_analysis(fc,output_table_name_inundated, [["Area_inun_{0}_{1}".format(year, projection), "SUM"]])
 
-                            print 'Calculated stats'
+                            print 'Muni name is: ' + muni_name
 
-                            # Something here for if land area is 0
-                            total_area = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')[0]
+                            if muni_area > 0:
 
-                            print 'Total area is: ' + str(total_area[0])
+                                total_area = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')[0]
 
-                            inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated, 'SUM_Area_inun_{0}_{1}' .format(year, projection))[0]
+                                inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated,'SUM_Area_inun_{0}_{1}'.format(year,projection))[0]
 
-                            print 'Inundated area is: ' + str(inundated_area[0])
+                                print 'Total area is: ' + str(total_area[0]) + ' and inundated area is: ' + str(inundated_area[0])
 
-                            percent_inundated = (inundated_area[0]/total_area[0])*100
+                                if total_area[0] is None:
+                                    print 'Total area is none'
 
-                            row[4] = inundated_area[0]
-                            row[5] = percent_inundated
+                                elif inundated_area is None:
+                                    print 'Inundated area is none'
 
-                            cursor.updateRow(row)
+                                if inundated_area[0] > 0:
+                                    percent_inundated = (inundated_area[0]/total_area[0])*100
 
-                            writer = csv.writer(csvfile)
+                                    row[4] = inundated_area[0]
+                                    row[5] = percent_inundated
 
-                            writer.writerow(
-                                [muni_state, muni_county, muni_name, "%.2f" % total_area[0], year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+                                    cursor.updateRow(row)
 
-collate_shp_municipalities_and_write_csv(['2006'], ['NCAH'], 'east_coast', '26', ['48'])
+                                    writer = csv.writer(csvfile)
+
+                                    writer.writerow(
+                                        [muni_state, muni_county, muni_name, "%.2f" % total_area[0], year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+
+                            else:
+                                print 'Area is 0'
+
+collate_shp_municipalities_and_write_csv(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast', '26', ['51'])

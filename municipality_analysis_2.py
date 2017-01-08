@@ -447,7 +447,9 @@ def cohort_id_shp(years, projections, region, state_numbers, area_threshold):
 
     for state_number in state_numbers:
 
-        municipalities = 'tl_2016_{0}_cousub_clip' .format(state_number)
+        #municipalities = 'tl_2016_{0}_cousub_clip' .format(state_number) # UNCOMMENT FOR PRIMARY ANALYSIS
+
+        municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands'.format(state_number) #COMMENT FOR WETLAND ANALYSIS
 
         municipalities_layer = arcpy.MakeFeatureLayer_management(municipalities, 'municipalities')
 
@@ -466,7 +468,10 @@ def cohort_id_shp(years, projections, region, state_numbers, area_threshold):
                 print exp
                 cohort_munis = arcpy.SelectLayerByAttribute_management('municipalities','NEW_SELECTION',' "{0}" > {1} ' .format(field, area_threshold) )
 
-                outname = 'cohort_municipalities_{0}_{1}_{2}percent_state{3}' .format(year, projection, str(area_threshold), state_number)
+                #outname = 'cohort_municipalities_{0}_{1}_{2}percent_state{3}' .format(year, projection, str(area_threshold), state_number) #UNCOMMENT FOR PRIMARY ANALYSIS
+
+                outname = 'cohort_municipalities_nowetlands_{0}_{1}_{2}percent_state{3}'.format(year, projection,
+                                                                                     str(area_threshold), state_number) #UNCOMMENT FOR WETLAND ANALYSIS
 
                 arcpy.CopyFeatures_management(cohort_munis, outname)
 
@@ -938,10 +943,10 @@ def write_csv_from_shp(years, projections, region):
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'east_coast', '20')
 
 
-#cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
+cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['51'], 20)
 #cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
 #merge_cohorts(['2035','2060','2080','2100'], ['NCAI'],'east_coast', '20')
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'west_coast', '20')
 
 
-export_cohort_to_shapefile(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '10')
+#export_cohort_to_shapefile(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '10')
