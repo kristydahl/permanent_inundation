@@ -412,15 +412,18 @@ def cohort_id_csv(years, projections, region, state_numbers, area_threshold):
 
             for year in years:
 
-                file_to_analyze = glob.glob1(path, 'inundated_muni_area*{0}_{1}_{2}*'.format(year, projection, state_number))[0]
+                file_to_analyze = glob.glob1(path, 'inundated_muni_nonwetland_area_summary_{0}_{1}_{2}*'.format(year, projection, state_number))[0] #THIS ONE FOR NO WETLANDS
+                #file_to_analyze = glob.glob1(path, 'inundated_muni_area*{0}_{1}_{2}*'.format(year, projection, state_number))[0] # THIS ONE FOR WITH WETLNDS
 
                 file_with_path = str(path + file_to_analyze)
 
                 print file_to_analyze
 
                 inundated_area_data = pandas.read_csv(file_with_path)
-                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_municipalities_by_year_{0}_{1}_{2}_state{3}'.format(
-                    region, area_threshold, projection, state_number) + '.csv'
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_municipalities_nowetlands_by_year_{0}_{1}_{2}_state{3}'.format(
+                    region, area_threshold, projection, state_number) + '.csv' # USE THIS ONE FOR NO WETLANDS
+
+                #csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/cohort_municipalities_nowetlands_by_year_{0}_{1}_{2}_state{3}'.format(region, area_threshold, projection, state_number) + '.csv'# USE THIS ONE FOR WITH WETLANDS
 
                 with open(csv_filename, 'ab') as csvfile:
 
@@ -523,8 +526,9 @@ def export_cohort_to_shapefile(years, projections, region, area_threshold):
         for year in years:
 
             #to_export = arcpy.ListFeatureClasses('{0}_{1}percent_cohort_{2}_{3}_state48' .format(region, area_threshold, year, projection))
-            to_export = arcpy.ListFeatureClasses(
-                'cohort_municipalities_{0}_{1}_{2}percent_state51'.format(year, projection, area_threshold))
+
+            to_export = arcpy.ListFeatureClasses('cohort_municipalities_{0}_{1}_{2}percent_state51'.format(year, projection, area_threshold))  # UNCOMMENT FOR WETLAND ANALYSIS
+            #to_export = arcpy.ListFeatureClasses('cohort_municipalities_nowetlands_{0}_{1}_{2}percent_state48'.format(year, projection, area_threshold)) # UNCOMMENT FOR WETLAND ANALYSIS
 
 
             print to_export
@@ -943,10 +947,10 @@ def write_csv_from_shp(years, projections, region):
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'east_coast', '20')
 
 
-cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['51'], 20)
-#cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
+#cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48'], 20)
+cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
 #merge_cohorts(['2035','2060','2080','2100'], ['NCAI'],'east_coast', '20')
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'west_coast', '20')
 
 
-#export_cohort_to_shapefile(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '10')
+#export_cohort_to_shapefile(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast', '20')

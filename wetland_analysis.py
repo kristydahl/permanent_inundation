@@ -56,28 +56,47 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
         for state_number in state_numbers:
 
-            #municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands'.format(state_number)
+            print 'Starting state number ' + state_number
 
-            municipalities = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number)
+            # municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands'.format(state_number) # UNCOMMENT WHEN BACK TO NORMAL; comment when running second scenario
+            #
+            # print 'Municipalities file is: ' + municipalities
+
+            municipalities = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number) # COMMENT WHEN BACK TO NORMAL; uncomment when running second scenario
 
             wetlands = 'wetlands_{0}_clip_proj'.format(state_number)
+#
+#             print 'Wetlands file is: ' + wetlands
+#
+#             #arcpy.RepairGeometry_management(wetlands)
+#
+#             #print 'Repaired geometry of wetlands layer'
+#
+            state_mhhw_surface = 'final_polygon_mhhw_merged_clip_to_{0}'.format(state_number)
+#
+#             print 'State MHHW surface is: ' + state_mhhw_surface
+#
+# # UNCOMMENT THROUGH ### when running second scenario
+#             municipalities_minus_wetlands = arcpy.Erase_analysis(municipalities, wetlands,'tl_2016_{0}_clip_no_wetlands'.format(state_number))
+#
+#             print 'Erased wetlands from municipalities'
+#
+#             municipalities_minus_mhhw_and_wetlands = arcpy.Erase_analysis(municipalities_minus_wetlands, state_mhhw_surface, 'tl_2016_{0}_clip_no_wetlands_or_mhhw'.format(state_number))
+#
+#             print 'Erased MHHW from municipalities'
+#
+#             arcpy.MakeFeatureLayer_management(municipalities_minus_mhhw_and_wetlands, 'clipped_municipalities')
+#
+#             result = arcpy.GetCount_management('clipped_municipalities')
+#             muni_rows = int(result.getOutput(0))
+#
+#             print 'State has {0} municipality rows' .format(muni_rows)
 
-            state_mhhw_surface = arcpy.ListFeatureClasses('final_polygon_mhhw_merged_clip_to_{0}'.format(state_number))[0]
-
-# uncomment next five lines to ###:
-
-            # municipalities_minus_wetlands = arcpy.Erase_analysis(municipalities, wetlands,'tl_2016_{0}_clip_no_wetlands'.format(state_number))
-
-            #print 'Erased wetlands from municipalities'
-
-            #municipalities_minus_mhhw_and_wetlands = arcpy.Erase_analysis(municipalities_minus_wetlands, state_mhhw_surface, 'tl_2016_{0}_clip_no_wetlands_or_mhhw'.format(state_number))
-
-            #print 'Erased MHHW from municipalities'
-
-            #arcpy.MakeFeatureLayer_management(municipalities_minus_mhhw_and_wetlands, 'clipped_municipalities')
 ###
-
-            arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities')
+            arcpy.MakeFeatureLayer_management(municipalities, 'clipped_municipalities') # UNCOMMENT when running second scenario
+            result = arcpy.GetCount_management('clipped_municipalities')
+            muni_rows = int(result.getOutput(0))
+            print 'State has {0} municipality rows' .format(muni_rows)
 
             for year in years:
 
@@ -93,25 +112,30 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
                 print 'Added Area and Percent inundation fields'
 
-                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv' # get rid of 'testing'
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
 
                 with open(csv_filename, 'wb') as csvfile:
 
-                    state_inundation_surface = arcpy.ListFeatureClasses(
-                        'final_polygon*{0}x_{1}_{2}*clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]
+                    #state_inundation_surface = arcpy.ListFeatureClasses('final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] ## COMMENTED JUST FOR TX
 
-# uncomment from here to next ###
-                    # inundation_minus_wetlands = arcpy.Erase_analysis(state_inundation_surface, wetlands, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands'.format(flood_frequency, year, projection, state_number))
-                    #
-                    # print 'Erased wetlands from inundation layer'
-                    #
-                    # inundation_minus_mhhw_and_wetlands = arcpy.Erase_analysis(inundation_minus_wetlands, state_mhhw_surface, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw'.format(flood_frequency, year, projection, state_number))
-                    #
-                    # print 'Erased MHHW from inundation layer'
+                    state_inundation_surface = arcpy.ListFeatureClasses('final_polygon*{0}x_{1}_{2}*clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] # This state_inundation_surface just for TX
 
-###
+                    print 'state inundation surface is: ' + state_inundation_surface
 
-                    inundation_minus_mhhw_and_wetlands = 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw'.format(flood_frequency, year, projection, state_number) # COMMENT OUT
+                    arcpy.RepairGeometry_management(state_inundation_surface) # UNCOMMENT FOR NORMAL
+
+                    print 'Repaired geometry of state inundation surface' # UNCOMMENT FOR NORMAL
+
+                    inundation_minus_wetlands = arcpy.Erase_analysis(state_inundation_surface, wetlands, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands'.format(flood_frequency, year, projection, state_number))
+
+                    print 'Erased wetlands from inundation layer'
+
+                    inundation_minus_mhhw_and_wetlands = arcpy.Erase_analysis(inundation_minus_wetlands, state_mhhw_surface, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw'.format(flood_frequency, year, projection, state_number))
+
+                    print 'Erased MHHW from inundation layer'
+
+
+                    #inundation_minus_mhhw_and_wetlands = 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw'.format(flood_frequency, year, projection, state_number) # COMMENT OUT
 
                     arcpy.MakeFeatureLayer_management(inundation_minus_mhhw_and_wetlands, 'inundation_minus_mhhw_and_wetlands')
 
@@ -194,8 +218,6 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
                             del fc
 
-                        else:
-                            print 'Land area is 0.'
 
         print 'Finished municipality analysis for state number ' + state_number + ' for {0} {1}' .format(year, projection)
 
@@ -272,8 +294,60 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
 
 
-#prep_wetlands_data('east_coast',['48'])
+#prep_wetlands_data('east_coast',['01','09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45'])
 
-municipality_wetlands_analysis(['2006','2030','2045','2060','2070','2080','2090'], ['NCAH'], 'east_coast','26',['51'])
+def erase_wetlands_and_mhhw_from_municipalities(region, state_numbers):
+
+    arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
+
+    for state_number in state_numbers:
+        print 'Starting state number ' + state_number
+
+        municipalities_orig = 'tl_2016_{0}_cousub_proj'.format(state_number)
+
+        municipalities = arcpy.Clip_analysis(municipalities_orig, 'all_noaa_mhhw_mosaic_polygon',
+                                             str('tl_2016_{0}_cousub_clip_for_wetlands'.format(state_number)))
+
+        print 'Clipped state municipalities to NOAA mhhw polygon for state number: ' + state_number
+
+        wetlands = 'wetlands_{0}_clip_proj'.format(state_number)
+
+        print 'Wetlands file is: ' + wetlands
+
+        state_mhhw_surface = 'final_polygon_mhhw_merged_clip_to_{0}'.format(state_number)
+
+        print 'State MHHW surface is: ' + state_mhhw_surface
+
+        municipalities_minus_wetlands = arcpy.Erase_analysis(municipalities, wetlands,
+                                                             'tl_2016_{0}_clip_no_wetlands'.format(
+                                                                 state_number))
+
+        print 'Erased wetlands from municipalities'
+
+        municipalities_minus_mhhw_and_wetlands = arcpy.Erase_analysis(municipalities_minus_wetlands,
+                                                                      state_mhhw_surface,
+                                                                      'tl_2016_{0}_clip_no_wetlands_or_mhhw'.format(
+                                                                          state_number))
+
+        print 'Erased MHHW from municipalities'
+
+        arcpy.MakeFeatureLayer_management(municipalities_minus_mhhw_and_wetlands, 'clipped_municipalities')
+
+        result = arcpy.GetCount_management('clipped_municipalities')
+        muni_rows = int(result.getOutput(0))
+
+        print 'State {0} has {1} municipality rows'.format(state_number, muni_rows)
+
+
+#erase_wetlands_and_mhhw_from_municipalities('east_coast',['34','36','42','44','45','51','01'])
+
+municipality_wetlands_analysis(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast','26',['48'])
+
+
+#municipality_wetlands_analysis(['2080','2090','2100'], ['NCAH'], 'east_coast','26',['13'])
+
+# LEFT TO RUN': 12 (NCAH 2090 and 2100); 13 (NCAH, need to remake MHHW layer first); 22 (NCAH 2045 through 2100)
+#'2006','2030','2045','2060','2070','2080','2090','2100'
 
 #,'2030','2045','2060','2070','2080','2090','2100'
+#,'25','28','33','34','36','42','45','48','51'
