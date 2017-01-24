@@ -41,7 +41,7 @@ def clip_mhhw_layer_to_states(region):
 
     arcpy.env.workspace = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/{0}.gdb'.format(region)
 
-    state_numbers = []
+    state_numbers = ['13']
     #'13', '22', '23', '24', '25', '28', '33', '34', '36', '37', '42', '44', '45'
 
     for state_number in state_numbers:
@@ -54,13 +54,13 @@ def clip_mhhw_layer_to_states(region):
 
         #mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon_mhhw_merged')[0]
 
-        mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw*fl_gulf')[0] #use this for FL and gulf_to_tx for LA
+        mhhw_inundation_surface = arcpy.ListFeatureClasses('final_polygon*mhhw*nc_to_fl')[0] #use this for FL and gulf_to_tx for LA
 
         print 'mhhw surface is ' + mhhw_inundation_surface
 
         #outname_mhhw = str(mhhw_inundation_surface + '_clip_to_{0}' .format(state_number))
 
-        outname_mhhw = 'final_polygon_mhhw_merged_clip_to_{0}' .format(state_number) # change back to be more general
+        outname_mhhw = 'final_polygon_mhhw_merged_clip_to_{0}_012017' .format(state_number) # change back to be more general
 
         arcpy.Clip_analysis(mhhw_inundation_surface, 'municipalities_outline', outname_mhhw)
 
@@ -927,7 +927,7 @@ def write_csv_from_shp(years, projections, region):
 # run in this order:
 
 #clip_to_tracts_then_mhhw_polygon('west_coast')
-#clip_mhhw_layer_to_states('east_coast')
+clip_mhhw_layer_to_states('east_coast')
 
 #municipality_analysis_mhhw('west_coast')
 #clip_inundation_layers_to_states(['2100'],['NCAI'],'east_coast','26')
@@ -948,7 +948,7 @@ def write_csv_from_shp(years, projections, region):
 
 
 #cohort_id_shp(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48'], 20)
-cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
+#cohort_id_csv(['2006','2030','2045','2060','2070','2080','2090','2100'],['NCAH'],'east_coast',['48','51'], 10)
 #merge_cohorts(['2035','2060','2080','2100'], ['NCAI'],'east_coast', '20')
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'west_coast', '20')
 

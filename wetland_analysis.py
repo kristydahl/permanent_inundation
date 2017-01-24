@@ -116,9 +116,9 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
                 with open(csv_filename, 'wb') as csvfile:
 
-                    #state_inundation_surface = arcpy.ListFeatureClasses('final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] ## COMMENTED JUST FOR TX
+                    state_inundation_surface = arcpy.ListFeatureClasses('final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0]
 
-                    state_inundation_surface = arcpy.ListFeatureClasses('final_polygon*{0}x_{1}_{2}*clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] # This state_inundation_surface just for TX
+                    #state_inundation_surface = arcpy.ListFeatureClasses('final_polygon*{0}x_{1}_{2}*clip_to_{3}'.format(flood_frequency, year, projection, state_number))[0] # This state_inundation_surface just for TX
 
                     print 'state inundation surface is: ' + state_inundation_surface
 
@@ -339,9 +339,9 @@ def erase_wetlands_and_mhhw_from_municipalities(region, state_numbers):
         print 'State {0} has {1} municipality rows'.format(state_number, muni_rows)
 
 
-#erase_wetlands_and_mhhw_from_municipalities('east_coast',['34','36','42','44','45','51','01'])
+#erase_wetlands_and_mhhw_from_municipalities('east_coast',['13'])
 
-municipality_wetlands_analysis(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast','26',['48'])
+municipality_wetlands_analysis(['2006'], ['NCAH'], 'east_coast','26',['22'])
 
 
 #municipality_wetlands_analysis(['2080','2090','2100'], ['NCAH'], 'east_coast','26',['13'])
