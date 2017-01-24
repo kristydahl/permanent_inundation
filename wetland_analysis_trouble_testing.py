@@ -1,3 +1,5 @@
+# this is replaced by wetland_analysis_trouble_states
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *
