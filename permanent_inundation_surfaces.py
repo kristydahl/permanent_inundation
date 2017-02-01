@@ -269,10 +269,10 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 
                 print 'Converted southern half to polygon'
 
-                union_north_south = 'final_polygon_' + str(to_convert) + '_union'
-                arcpy.Union_analysis([str(outname_polygon + '_north'), str(outname_polygon + '_middle'), str(outname_polygon + '_south')], union_north_south)
+                #union_north_south = 'final_polygon_' + str(to_convert) + '_union'
+                #arcpy.Union_analysis([str(outname_polygon + '_north'), str(outname_polygon + '_middle'), str(outname_polygon + '_south')], union_north_south)
 
-                print 'United northern, middle, and southern chunks'
+                #print 'United northern, middle, and southern chunks'
 
 
             else:
@@ -284,12 +284,13 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 
                 print 'Converted ' + to_convert + ' to polygon'
 
-#interpolate_and_create_water_level_surfaces(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-#subtract_dems_from_wls(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-#combine_chunks(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-region_group(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-extract(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
-raster_to_polygon(['2035','2060','2080','2100'],['NCAI'],'west_coast','26')
+#prep_gauge_data_for_interpolation('west_coast',['NCAL'])
+#interpolate_and_create_water_level_surfaces(['2060','2100'],['NCAL'],'west_coast','26')
+#subtract_dems_from_wls(['2060','2100'],['NCAL'],'west_coast','26')
+#combine_chunks(['2060','2100'],['NCAL'],'west_coast','26')
+region_group(['2060','2100'],['NCAL'],'west_coast','26')
+extract(['2060','2100'],['NCAL'],'west_coast','26')
+raster_to_polygon(['2100'],['NCAL'],'west_coast','26')
 
 
 

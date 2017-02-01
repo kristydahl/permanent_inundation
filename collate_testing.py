@@ -23,6 +23,8 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
             for state_number in state_numbers:
 
+                print 'State number is: ' + state_number
+
                 municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands' .format(state_number)
 
                 file_with_results = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number)
@@ -75,32 +77,46 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
                             if muni_area > 0:
 
-                                total_area = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')[0]
+                                total_area_orig = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')
 
-                                inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated,'SUM_Area_inun_{0}_{1}'.format(year,projection))[0]
+                                print total_area_orig
 
-                                print 'Total area is: ' + str(total_area[0]) + ' and inundated area is: ' + str(inundated_area[0])
+                                if len(total_area_orig) > 0:
 
-                                if total_area[0] is None:
-                                    print 'Total area is none'
+                                    total_area = total_area_orig[0]
 
-                                elif inundated_area is None:
-                                    print 'Inundated area is none'
+                                    inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated,'SUM_Area_inun_{0}_{1}'.format(year,projection))[0]
 
-                                if inundated_area[0] > 0:
-                                    percent_inundated = (inundated_area[0]/total_area[0])*100
+                                    print 'Total area is: ' + str(total_area[0]) + ' and inundated area is: ' + str(inundated_area[0])
 
-                                    row[4] = inundated_area[0]
-                                    row[5] = percent_inundated
+                                    if total_area[0] is None:
+                                        print 'Total area is none'
 
-                                    cursor.updateRow(row)
+                                    elif inundated_area is None:
+                                        print 'Inundated area is none'
 
-                                    writer = csv.writer(csvfile)
+                                    if inundated_area[0] > 0:
+                                        percent_inundated = (inundated_area[0]/total_area[0])*100
 
-                                    writer.writerow(
-                                        [muni_state, muni_county, muni_name, "%.2f" % total_area[0], year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+                                        row[4] = inundated_area[0]
+                                        row[5] = percent_inundated
 
-                            else:
-                                print 'Area is 0'
+                                        cursor.updateRow(row)
 
-collate_shp_municipalities_and_write_csv(['2006','2030','2045','2060','2070','2080','2090','2100'], ['NCAH'], 'east_coast', '26', ['51'])
+                                        writer = csv.writer(csvfile)
+
+                                        writer.writerow(
+                                            [muni_state, muni_county, muni_name, "%.2f" % total_area[0], year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+
+                                else:
+                                    print 'Area is 0'
+
+collate_shp_municipalities_and_write_csv(['2060','2080','2100'], ['NCAI'], 'east_coast', '26', ['22'])
+
+#collate_shp_municipalities_and_write_csv(['2035','2060','2080','2100'], ['NCAI'], 'west_coast', '26', ['06','41','53'])
+
+#collate_shp_municipalities_and_write_csv(['2035','2060','2080','2100'], ['NCAI'], 'east_coast', '26', ['01'])
+
+# Need to merge shps for FL and LA before running those states
+
+#'01','09','10','11','13','23','24','25','28','33','34','36','37','42','44','45','48','51'
