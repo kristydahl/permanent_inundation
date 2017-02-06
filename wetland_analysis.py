@@ -247,9 +247,13 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
         for year in years:
 
+            print 'Year is: ' + year
+
             for state_number in state_numbers:
 
-                municipalities = 'tl_2016_{0}_clip_for_wetlands' .format(state_number)
+                print 'State number is: ' + state_number
+
+                municipalities = 'tl_2016_{0}_cousub_clip_for_wetlands' .format(state_number)
 
                 file_with_results = 'tl_2016_{0}_clip_no_wetlands_or_mhhw' .format(state_number)
 
@@ -265,50 +269,75 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
                 print 'Added Area and Percent inundation fields to municipalities file'
 
+                arcpy.SelectLayerByLocation_management('municipalities',"INTERSECT", 'to_read', "", "NEW_SELECTION")
 
-                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_summary'.format(
-                    region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
+
+                csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/inundated_muni_nonwetland_area_summary'.format(region) + '_' + year + '_' + projection + '_' + state_number + '.csv'
+
+                #csv_filename = 'C:/Users/kristydahl/Desktop/GIS_data/permanent_inundation/{0}/test_collate.csv' .format(region)
 
                 with open(csv_filename, 'wb') as csvfile:
-                    fields = ['GEOID', "STATEFP", "COUNTYFP", "NAME", "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection)]
+                    fields = ['GEOID', "STATEFP", "COUNTYFP", "NAME", "Area_inun_{0}_{1}".format(year, projection), "Pct_inun_{0}_{1}".format(year, projection), "Shape_Area"]
 
+                    count = 0
                     with arcpy.da.UpdateCursor('municipalities', fields) as cursor:
                         for row in cursor:
+
+                            count = count + 1
 
                             geoid = row[0]
                             muni_state = row[1]
                             muni_county = row[2]
                             muni_name = row[3]
+                            muni_area = row[6]
 
-                            fc = arcpy.SelectLayerByAttribute_management('to_read',"GEOID = {0}" .format(geoid))
+                            fc = arcpy.SelectLayerByAttribute_management('to_read',"NEW_SELECTION", " GEOID = '{0}' " .format(geoid))
 
-                            output_table_name_total = 'output_total_area'
+                            output_table_name_total = 'output_total_area_collate_' + str(count)
 
-                            output_table_name_inundated = 'output_inundated_area'
+                            output_table_name_inundated = 'output_inundated_area_collate_'+ str(count)
 
                             arcpy.Statistics_analysis(fc, output_table_name_total, [["Shape_Area", "SUM"]])
 
-                            arcpy.Statistics_analysis(fc,output_table_name_inundated [["Area_inun_{0}_{1}".format(year, projection), "SUM"]])
+                            arcpy.Statistics_analysis(fc,output_table_name_inundated, [["Area_inun_{0}_{1}".format(year, projection), "SUM"]])
 
+                            print 'Muni name is: ' + muni_name
 
-                            print 'Calculated stats'
+                            if muni_area > 0:
 
-                            total_area = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')[0]
+                                total_area_orig = arcpy.da.TableToNumPyArray(output_table_name_total, 'SUM_Shape_Area')
 
-                            inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated, 'SUM_Area_inun{0}_{1}' .format(year, projection))[0]
+                                print total_area_orig
 
-                            percent_inundated = (inundated_area/total_area)*100
+                                if len(total_area_orig) > 0:
 
-                            row[4] = inundated_area
-                            row[5] = percent_inundated
+                                    total_area = total_area_orig[0]
 
-                            cursor.UpdateRow(row)
+                                    inundated_area = arcpy.da.TableToNumPyArray(output_table_name_inundated,'SUM_Area_inun_{0}_{1}'.format(year,projection))[0]
 
-                            writer = csv.writer(csvfile)
+                                    print 'Total area is: ' + str(total_area[0]) + ' and inundated area is: ' + str(inundated_area[0])
 
-                            writer.writerow(
-                                [muni_state, muni_county, muni_name, "%.2f" % total_area, year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+                                    if total_area[0] is None:
+                                        print 'Total area is none'
 
+                                    elif inundated_area is None:
+                                        print 'Inundated area is none'
+
+                                    if inundated_area[0] > 0:
+                                        percent_inundated = (inundated_area[0]/total_area[0])*100
+
+                                        row[4] = inundated_area[0]
+                                        row[5] = percent_inundated
+
+                                        cursor.updateRow(row)
+
+                                        writer = csv.writer(csvfile)
+
+                                        writer.writerow(
+                                            [muni_state, muni_county, muni_name, "%.2f" % total_area[0], year, projection, "%.2f" % inundated_area[0], "%.2f" % percent_inundated])
+
+                                else:
+                                    print 'Area is 0'
 
 
 #prep_wetlands_data('east_coast',['01','09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45'])
@@ -318,7 +347,10 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
 
 #erase_wetlands_and_mhhw_from_municipalities('west_coast',['06','41','53'])
 
-municipality_wetlands_analysis(['2060','2100'], ['NCAL'], 'east_coast','26',['01','09','10','11','13','23','24','25','28','33','34','36','37','42','44','45','48','51'])
+#municipality_wetlands_analysis(['2060','2100'], ['NCAL'], 'east_coast','26',['42','44','45','48','51'])
+#municipality_wetlands_analysis(['2060'], ['NCAL'], 'west_coast','26',['06','41','53'])
+#collate_shp_municipalities_and_write_csv(['2060','2100'], ['NCAL'], 'east_coast', '26', ['01','09','10','11','12','22'])
+collate_shp_municipalities_and_write_csv(['2060','2100'], ['NCAL'], 'west_coast', '26', ['06','41','53'])
 #municipality_wetlands_analysis(['2035','2060','2080','2100'], ['NCAI'], 'west_coast','26',['06','41','53'])
 
 # need to do wetland analysis for 12 and 22

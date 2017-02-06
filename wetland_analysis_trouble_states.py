@@ -133,13 +133,13 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
                     print 'repaired geometery of state inundation surface clip'
 
-                    inundation_minus_wetlands = arcpy.Erase_analysis(state_inundation_surface_clip, clipped_wetlands_to_area, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_{4}_012317'.format(flood_frequency, year, projection,state_number, str(area_number)))
+                    inundation_minus_wetlands = arcpy.Erase_analysis(state_inundation_surface_clip, clipped_wetlands_to_area, 'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_{4}_020117'.format(flood_frequency, year, projection,state_number, str(area_number)))
 
                     print 'Erased wetlands from inundation layer'
 
                     inundation_minus_mhhw_and_wetlands = arcpy.Erase_analysis(inundation_minus_wetlands,
                                                                               clipped_mhhw_to_area,
-                                                                              'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw_{4}_012317'.format(
+                                                                              'final_polygon_{0}x_{1}_{2}_merged_clip_to_{3}_no_wetlands_or_mhhw_{4}_020117'.format(
                                                                                   flood_frequency, year, projection,
                                                                                   state_number, str(area_number)))
 
@@ -242,4 +242,4 @@ def municipality_wetlands_analysis(years, projections, region, flood_frequency, 
 
 #clip_data_to_areas('east_coast',['22'])
 
-municipality_wetlands_analysis(['2035','2060','2080','2100'], ['NCAI'], 'east_coast','26',['22'])
+municipality_wetlands_analysis(['2060','2100'], ['NCAL'], 'east_coast','26',['12','22'])

@@ -942,7 +942,7 @@ def write_csv_from_shp(years, projections, region):
 #municipality_analysis_mhhw('west_coast')
 #clip_inundation_layers_to_states(['2100'],['NCAI'],'east_coast','26')
 
-clip_extract_and_convert_to_polygon(['2100'], ['NCAL'], 'east_coast', 'none', '26')
+#clip_extract_and_convert_to_polygon(['2100'], ['NCAL'], 'east_coast', 'none', '26')
 
 #municipality_analysis_year(['2100'], ['NCAI'], 'east_coast', '26')
 #municipality_analysis_year(['2035'], ['NCAI'], 'east_coast', '26')
@@ -962,7 +962,7 @@ clip_extract_and_convert_to_polygon(['2100'], ['NCAL'], 'east_coast', 'none', '2
 #merge_cohorts(['2035','2060','2080','2100'], ['NCAI'],'east_coast', '20')
 #merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'west_coast', '20')
 
-#cohort_id_shp(['2035','2060','2080','2100'],['NCAI'],'east_coast',['01','09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45','48','51'], 10)
-#cohort_id_csv(['2035','2060','2080','2100'],['NCAI'],'east_coast',['01','09','10','11','12','13','22','23','24','25','28','33','34','36','37','42','44','45','48','51'], 10)
-#merge_cohorts(['2035','2060','2080','2100'],['NCAI'],'east_coast', '10')
-#export_cohort_to_shapefile(['2035','2060','2080','2100'],['NCAI'],'east_coast', '10')
+cohort_id_shp(['2060','2100'],['NCAL'],'west_coast',['06','41','53'], 10)
+cohort_id_csv(['2060','2100'],['NCAL'],'west_coast',['06','41','53'], 10)
+merge_cohorts(['2060','2100'],['NCAL'],'west_coast', '10')
+export_cohort_to_shapefile(['2060','2100'],['NCAL'],'west_coast', '10')

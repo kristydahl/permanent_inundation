@@ -111,9 +111,10 @@ def collate_shp_municipalities_and_write_csv(years, projections, region, flood_f
                                 else:
                                     print 'Area is 0'
 
-collate_shp_municipalities_and_write_csv(['2060','2080','2100'], ['NCAI'], 'east_coast', '26', ['22'])
-
-#collate_shp_municipalities_and_write_csv(['2035','2060','2080','2100'], ['NCAI'], 'west_coast', '26', ['06','41','53'])
+#collate_shp_municipalities_and_write_csv(['2060','2100'], ['NCAL'], 'east_coast', '26', ['13','23','24','25','28','33','34','36','37','42','44','45','48','51'])
+collate_shp_municipalities_and_write_csv(['2100'], ['NCAL'], 'east_coast', '26', ['01','09','10','11'])
+collate_shp_municipalities_and_write_csv(['2060','2100'], ['NCAL'], 'east_coast', '26', ['12','22'])
+#collate_shp_municipalities_and_write_csv(['2060','2100'], ['NCAL'], 'west_coast', '26', ['06','41','53'])
 
 #collate_shp_municipalities_and_write_csv(['2035','2060','2080','2100'], ['NCAI'], 'east_coast', '26', ['01'])
 

@@ -206,7 +206,10 @@ def extract(years, projections, region, flood_frequency):
 
         for year in years:
 
-            rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_{0}x_{1}_{2}' .format(flood_frequency, year, projection))[0]
+            rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_{0}x_{1}_{2}' .format(flood_frequency, year, projection))[0] #UNCOMMENT FOR NORMAL RUN
+
+            #rg_surface = arcpy.ListRasters('rg_merged_raw_raster_surface_{0}x_{1}_{2}_2'.format(flood_frequency, year, projection))[0]
+
 
             print('File to extract is ' + rg_surface)
 
@@ -287,10 +290,11 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 #prep_gauge_data_for_interpolation('west_coast',['NCAL'])
 #interpolate_and_create_water_level_surfaces(['2060','2100'],['NCAL'],'west_coast','26')
 #subtract_dems_from_wls(['2060','2100'],['NCAL'],'west_coast','26')
-#combine_chunks(['2060','2100'],['NCAL'],'west_coast','26')
-region_group(['2060','2100'],['NCAL'],'west_coast','26')
-extract(['2060','2100'],['NCAL'],'west_coast','26')
-raster_to_polygon(['2100'],['NCAL'],'west_coast','26')
+#combine_chunks(['2035','2060','2100'],['NCAI'],'east_coast','26')
+region_group(['2080'],['NCAI'],'east_coast','26')
+extract(['2080'],['NCAI'],'east_coast','26')
+#extract(['2060','2100'],['NCAI'],'east_coast','26')
+#raster_to_polygon(['2100'],['NCAL'],'west_coast','26')
 
 
 
