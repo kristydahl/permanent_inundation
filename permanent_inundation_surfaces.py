@@ -291,7 +291,7 @@ def raster_to_polygon(years, projections,region, flood_frequency):
 #interpolate_and_create_water_level_surfaces(['2060','2100'],['NCAL'],'west_coast','26')
 #subtract_dems_from_wls(['2060','2100'],['NCAL'],'west_coast','26')
 #combine_chunks(['2035','2060','2100'],['NCAI'],'east_coast','26')
-region_group(['2080'],['NCAI'],'east_coast','26')
+#region_group(['2080'],['NCAI'],'east_coast','26')
 extract(['2080'],['NCAI'],'east_coast','26')
 #extract(['2060','2100'],['NCAI'],'east_coast','26')
 #raster_to_polygon(['2100'],['NCAL'],'west_coast','26')
