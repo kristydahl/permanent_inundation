@@ -1,3 +1,6 @@
+# These methods were the heart of what was used for the county subdivision inundated area analysis. Wetlands and areas below MHHW are erased from both the county subdivision polygons and the
+# inundated area surfaces. Because this process can "break" the county subdivisions into different pieces, the results then need to be collated. Analyses done on a state-by-state basis.
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *

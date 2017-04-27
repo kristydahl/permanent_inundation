@@ -1,3 +1,6 @@
+# These methods remove leveed areas from inundation layers and county subdivision layers that have already had wetland areas erased.
+# They read from a national database that has east and west coast communities all in the same layers.
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *

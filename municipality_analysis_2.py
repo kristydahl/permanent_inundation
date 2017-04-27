@@ -1,3 +1,7 @@
+# These methods analyze the area within Census county subdivisions that is exposed to chronic inundation as determined via the permanent inundation surfaces script.
+# Wetlands and leveed areas are included in this analysis. Ultimately, we decided to remove wetland and leveed areas from our calculations and developed the
+# wetland_analysis and remove_leveed_areas scripts.
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *

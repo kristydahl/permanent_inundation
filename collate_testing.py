@@ -1,3 +1,5 @@
+# I think this has been fully incorporated into the wetland_analysis.py script, but keeping in the repo as a standalone just in case.
+
 import arcpy
 from arcpy import env
 from arcpy.sa import *

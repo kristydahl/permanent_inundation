@@ -1,3 +1,5 @@
+# This version of the wetlands analysis was used for FL and LA (and perhaps NC). Because of the extensive wetlands and the length of the shoreline in these states, I divided them into
+# a few distinct areas and carried out the wetland analysis on those areas. The results are then recombined so that they're encompassed in a single shapefile.
 import arcpy
 from arcpy import env
 from arcpy.sa import *
