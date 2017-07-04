@@ -553,6 +553,7 @@ def export_cohort_to_shapefile(years, projections, region, area_threshold):
 
                 print 'Exported {0} {1} to shapefile' .format(year, projection)
 
+# I don't think I ever quite got the zip script working.
 def zip(years, projections, region, state_numbers):
 
 
